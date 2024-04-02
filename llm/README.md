@@ -12,7 +12,15 @@ Initially
     pip install -r requirements.txt
     ```
  - Create .env file under `llm` directory and copy `API_TOKEN` into it.
- - `python llm_request.py`
+ - `python main.py`
+
+## References
+
+[API Documentation](https://api.nlp-tlp.org/redoc/#tag/queue_task)
+
+[Self-hosted LLMs at UWA](https://uwa-nlp-tlp.gitbook.io/llm-tutorial)
+
+
 
 ## TODOs:
 
