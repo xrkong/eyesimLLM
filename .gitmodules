@@ -1,3 +1,0 @@
-[submodule "eyesim-docker"]
-	path = eyesim-docker
-	url = git@github.com:xrkong/eyesim-docker.git
