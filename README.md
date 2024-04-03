@@ -17,7 +17,7 @@ Using LLM (local or cloud) to control eyebots in the simulator.
 
  - Set up docker
    ```bash
-      docker build -f python.Dockerfile -t eyesim1.5.2:latest
+      docker build -f Dockerfile -t eyesim1.5.2:latest .
    ```
  - Set up virtual environment
     ```bash
