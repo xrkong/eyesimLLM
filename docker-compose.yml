@@ -7,7 +7,7 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - .config:/home/eyesim/.config/   
-      - .:/home/eyesim/ws/
+      - .:/home/eyesim/ws
     environment:
       - DISPLAY
     command: eyesim
