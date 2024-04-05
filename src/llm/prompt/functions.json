@@ -1,0 +1,40 @@
+[
+  {
+    "name": "VWStraight",
+    "description": "Drive straight.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "dist": {
+          "type": "integer",
+          "description": "The distance to drive forward in mm."
+        },
+        "lin_speed": {
+          "type": "integer",
+          "description": "The linear speed of the vehicle in mm/s."
+        }
+      }
+    }
+  },
+  {
+    "name": "VWTurn",
+    "description": "Turn left or right.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "angle": {
+          "type": "integer",
+          "description": "The angle to turn in degrees."
+        },
+        "ang_speed": {
+          "type": "integer",
+          "description": "The angular speed of the vehicle in degrees/s."
+        }
+      }
+    }
+  },
+  {
+    "name": "VWWait",
+    "description": "Suspend current thread until drive operation has finished."
+  }
+]

@@ -4,7 +4,7 @@ import json
 import logging
 import time
 from dotenv import load_dotenv, find_dotenv
-from typing import List, Dict, Union
+from typing import Union, List, Dict
 
 _ = load_dotenv(find_dotenv())
 
@@ -17,38 +17,27 @@ headers = {
 
 
 class LLMRequest:
-    def __init__(self, model_name: str, llm_task_type: str = "chat_completion"):
-        """
-        :param model_name:
-        :param llm_task_type: "chat_completion" "completion" "create_embedding"
-        """
+    def __init__(self, task_type: str = "gpu", name: str = "eyesim", model_name: str = "Mixtral-8x7b",
+                 llm_task_type: str = "chat_completion"):
         logger.info(f"Creating LLMRequest for model {model_name}")
+        self.task_type = task_type
+        self.name = name
         self.model_name = model_name
         self.llm_task_type = llm_task_type
         self.task_id = -1
 
-    def init_LLM(self):
-        prompt = [{"role": "system", "content": "You are an AI assistant for a autonomous vehicle to help it find a "
-                                                "red can. The vehicle has a camera and can detect red color. It can "
-                                                "also move forward, backward"
-                                                "turn left, right to search for the red can and move towards it. "
-                                                "Your task is to generate one of four commands based on the condition "
-                                                "provided by the user,"
-                                                "the four commands are 'turn left', "
-                                                "'turn right', 'move forward', 'move backward'."},
-                  {"role": "user", "content": "I can't see the red can in my sight yet. Please give me a command to "
-                                              "find"
-                                              "it."}]
-        return self.get_completion(prompt=prompt)
-
-    def queue_task_llm(self, prompt: str):
+    def queue_task_llm(self, messages: List[Dict[str, str]], functions: List[Dict[str, str]] = None,
+                       function_call: Union[str, Dict[str, str]] = None) -> int:
         logger.info(f"Queuing LLM task for model {self.model_name}")
         payload = json.dumps({
-            "task_worker": "gpu",
-            "name": "eyesim_test",
+            "task_type": self.task_type,
+            "name": self.name,
             "model_name": self.model_name,
-            "prompt": prompt,
-            "llm_task_type": self.llm_task_type
+            "llm_task_type": self.llm_task_type,
+            "messages": messages,
+            "functions": functions,
+            "function_call": function_call
+
         })
         response = requests.request("POST", f"{baseurl}custom_llm/", headers=headers,
                                     data=payload)
@@ -60,15 +49,15 @@ class LLMRequest:
 
     def queue_task_status(self):
         response = requests.request("GET", f"{baseurl}{self.task_id}/status/", headers=headers)
-        print(response.text)
         response_json = json.loads(response.text)
         return response_json
 
-    def get_completion(self, prompt: Union[str, List[Dict]], query_interval: int = 0.5):
-        self.queue_task_llm(prompt=prompt)
+    def get_completion(self, messages: List[Dict[str, str]], functions: List[Dict[str, str]] = None,
+                       function_call: Union[str, Dict[str, str]] = None, query_interval: int = 0.2):
+        self.queue_task_llm(messages=messages, functions=functions, function_call=function_call)
         status = None
         task_response = dict()
-        while status not in ["completed", "failed"]:
+        while status not in ["completed", "failed", "cancelled"]:
             time.sleep(query_interval)
             logger.info(f"Checking task status for task {self.task_id}")
             task_response = self.queue_task_status()

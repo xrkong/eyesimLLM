@@ -42,9 +42,6 @@ def main():
     max_value = 0
     LCDMenu("", "", "", "END")
     CAMInit(QVGA)  # QVGA = 320x240
-    req = LLMRequest(model_name="Mixtral-8x7b", llm_task_type="completion")
-    command = req.init_LLM()
-    logger.info(command)
     while KEYRead() != KEY4 and max_value < 180:
         img = CAMGet()
         LCDImage(img)
