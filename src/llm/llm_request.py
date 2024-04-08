@@ -9,7 +9,6 @@ from typing import Union, List, Dict
 _ = load_dotenv(find_dotenv())
 
 logger = logging.getLogger(__name__)
-baseurl = "https://api.nlp-tlp.org/queue_task/"
 headers = {
     'Authorization': f'Token {os.environ["API_TOKEN"]}',
     'Content-Type': 'application/json'
@@ -17,9 +16,10 @@ headers = {
 
 
 class LLMRequest:
-    def __init__(self, task_type: str = "gpu", name: str = "eyesim", model_name: str = "Mixtral-8x7b",
+    def __init__(self, baseurl: str, task_type: str = "gpu", name: str = "eyesim", model_name: str = "Mixtral-8x7b",
                  llm_task_type: str = "chat_completion"):
         logger.info(f"Creating LLMRequest for model {model_name}")
+        self.baseurl = baseurl
         self.task_type = task_type
         self.name = name
         self.model_name = model_name
@@ -39,7 +39,7 @@ class LLMRequest:
             "function_call": function_call
 
         })
-        response = requests.request("POST", f"{baseurl}custom_llm/", headers=headers,
+        response = requests.request("POST", f"{self.baseurl}custom_llm/", headers=headers,
                                     data=payload)
         response_json = json.loads(response.text)
         task_id = response_json.get("task_id")
@@ -48,7 +48,7 @@ class LLMRequest:
         return task_id
 
     def queue_task_status(self):
-        response = requests.request("GET", f"{baseurl}{self.task_id}/status/", headers=headers)
+        response = requests.request("GET", f"{self.baseurl}{self.task_id}/status/", headers=headers)
         response_json = json.loads(response.text)
         return response_json
 
