@@ -17,7 +17,7 @@ Using LLM (local or cloud) to control eyebots in the simulator.
 
  - Set up docker
    ```bash
-      docker build -f Dockerfile -t eyesim1.5.2:latest .
+   docker build -f Dockerfile -t eyesim1.5.2:latest .
    ```
  - Set up virtual environment
     ```bash
@@ -25,14 +25,14 @@ Using LLM (local or cloud) to control eyebots in the simulator.
     source venv/bin/activate
     pip install -r requirements.txt
     ```
- - Create .env file and `API_TOKEN` into it.
+ - Create .env file and put `API_TOKEN` into it.
 
  - Execute the demo
- - ```bash
-    docker compose up
-    docker exec -it eyesim bash
-    cd ws/src
-    python3 finder.py
+   ```bash
+   docker compose up
+   docker exec -it eyesim bash
+   cd ws/src
+   python3 finder.py
    ```
 
 ## References
