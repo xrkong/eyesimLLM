@@ -8,8 +8,8 @@ import json, ast
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-baseurl = "http://host.docker.internal:8000/queue_task/"
-# baseurl = "https://api.nlp-tlp.org/queue_task/"
+# baseurl = "http://host.docker.internal:8000/queue_task/"
+baseurl = "https://api.nlp-tlp.org/queue_task/"
 
 with open("llm/prompt/system.txt", 'r') as system_file:
     system = system_file.read()
@@ -71,7 +71,7 @@ def main():
     LCDMenu("", "", "", "END")
     CAMInit(QVGA)  # QVGA = 320x240
 
-    req = LLMRequest(baseurl=baseurl, model_name="llama2-7b-chat", task_type="gpu")
+    req = LLMRequest(baseurl=baseurl, model_name="llama2-13b-chat", task_type="gpu")
 
     while KEYRead() != KEY4 and max_value < 180:
 

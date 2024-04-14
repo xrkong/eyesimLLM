@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
 import numpy as np
 from eye import *
-from llm.llm_request import LLMRequest
 import logging
-import json, ast
-from llm.openai_request import OpenAIRequest
-
+import json
+from openai import OpenAI
+from dotenv import load_dotenv, find_dotenv
+import os
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-baseurl = "http://host.docker.internal:8000/queue_task/"
-# baseurl = "https://api.nlp-tlp.org/queue_task/"
+_ = load_dotenv(find_dotenv())
+
+
+client = OpenAI(
+    # This is the default and can be omitted
+    api_key=os.environ.get("OPENAI_API_KEY"),
+)
+
 
 with open("llm/prompt/system.txt", 'r') as system_file:
     system = system_file.read()
@@ -49,19 +55,29 @@ def red_detector(img):
     return [True, max_col, max]
 
 
-def LLMQuery(req: OpenAIRequest, status: str) -> dict:
-
+def LLMQuery(model_name:str, status: str):
     messages = [
         {"role": "system", "content": system},
         {"role": "user", "content": status}
     ]
 
-    response = req.chat_completion_request(messages=messages, tools=tools, tool_choice="auto")
-    logger.info(response)
-    message_dict = ast.literal_eval(response['desc'])
-    command = message_dict['choices'][0]['message']['tool_calls'][0]['function']
-    logger.info(command)
-    return command
+    try:
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=messages,
+            tools=tools,
+            tool_choice="auto",
+        )
+
+        logger.info(response)
+        command = response.choices[0].message.tool_calls[0].function
+        logger.info(command)
+        return command
+    except Exception as e:
+        print("Unable to generate ChatCompletion response")
+        print(f"Exception: {e}")
+        return e
+
 
 
 
@@ -72,41 +88,37 @@ def main():
     max_value = 0
     LCDMenu("", "", "", "END")
     CAMInit(QVGA)  # QVGA = 320x240
-
-    req = OpenAIRequest()
+    predicts = []
 
     while KEYRead() != KEY4 and max_value < 180:
 
         img = CAMGet()
         LCDImage(img)
         VWWait()
-
         dist = PSDGet(1)
         [res, max_col, max_value] = red_detector(img)
         status = f"dist={dist}, res={res}, max_col={max_col}"
-        command=LLMQuery(req=req, status=status)
-        arguments = json.loads(command["arguments"])
-        if command["name"] == "VWTurn":
+        command=LLMQuery(model_name='gpt-4', status=status)
+        arguments = json.loads(command.arguments)
+        function_name = command.name
+        if function_name == "VWTurn":
             VWTurn(arguments["angle"], arguments["ang_speed"])
             VWWait()
-        elif command["name"] == "VWStraight":
+        elif function_name == "VWStraight":
             VWStraight(arguments["dist"], arguments["lin_speed"])
             VWWait()
         else:
             logger.info("No command found")
 
+        if not res or max_col < QVGA_Y / 3:
+            predicts.append({"VWTurn(5, 50)": function_name + " " + str(arguments)})
+        elif max_col > 2 * QVGA_Y / 3:
+            predicts.append({"VWTurn(-5, 50)": function_name + " " + str(arguments)})
+        elif PSDGet(1) > SAFE:
+            predicts.append({"VWStraight(50, 100)": function_name + " " + str(arguments)})
 
-
-        # if not res:  # no red pixels
-        #     VWTurn(5, 50)
-        #     VWWait()
-        # elif max_col < QVGA_Y / 3:  # found red, turn left
-        #     VWTurn(5, 50)
-        # elif max_col > 2 * QVGA_Y / 3:  # found red, turn right
-        #     VWTurn(-5, 50)
-        # elif PSDGet(1) > SAFE:  # check if front is clear
-        #     VWStraight(50, 100)
-        #     VWWait()
+        with open('llm/predict_record.txt', 'a') as f:
+            f.write('\n'.join(predicts[-1]))
 
     VWSetSpeed(0, 0)
 

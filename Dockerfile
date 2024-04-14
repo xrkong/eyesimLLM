@@ -8,8 +8,13 @@ RUN apt-get update ; \
   apt-get install -y wget \
     libx11-dev unzip sudo \
     xvfb x11vnc \
-    python3 python3-pip
+    software-properties-common
 
+
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get update --fix-missing
+RUN apt-get install -y python3.9
+RUN apt-get install -y python3-pip
 RUN useradd -m eyesim
 #COPY --chown=eyesim:eyesim . /home/eyesim
 
