@@ -22,16 +22,15 @@ USER eyesim
 WORKDIR /home/eyesim
 # Install dependencies
 COPY ./requirements.txt /home/eyesim/requirements.txt
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
-RUN wget https://roblab.org/eyesim/ftp/EyeSim-1.5.2-Linux.tar.gz && \
-  wget https://roblab.org/eyesim/ftp/Eyesim-Examples.zip
+RUN python3.9 -m pip install --upgrade pip
+RUN python3.9 -m pip install --no-cache-dir -r requirements.txt
+RUN wget https://roblab.org/eyesim/ftp/EyeSim-1.5.2-Linux.tar.gz
+RUN wget https://roblab.org/eyesim/ftp/Eyesim-Examples.zip
 RUN tar -xzf EyeSim-1.5.2-Linux.tar.gz && rm EyeSim-1.5.2-Linux.tar.gz && \
-  unzip Eyesim-Examples.zip && rm Eyesim-Examples.zip 
+  unzip Eyesim-Examples.zip && rm Eyesim-Examples.zip
 
 USER root
 WORKDIR /home/eyesim
-RUN cp -r ./eyesimX ./EyeSim && \
-  cd EyeSim && ./install.sh
+RUN cp -r ./eyesimX ./EyeSim && cd EyeSim && ./install.sh
 
 USER eyesim
