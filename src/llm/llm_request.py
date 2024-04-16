@@ -16,7 +16,7 @@ headers = {
 
 
 class LLMRequest:
-    def __init__(self, baseurl: str, task_type: str = "gpu", name: str = "eyesim", model_name: str = "llama2-7b-chat",
+    def __init__(self, baseurl: str = None, task_type: str = "gpu", name: str = "eyesim", model_name: str = "llama2-7b-chat",
                  llm_task_type: str = "chat_completion"):
         self.logger = logging.getLogger(__name__)
         self.baseurl = baseurl
@@ -68,3 +68,12 @@ class LLMRequest:
             return None
         self.logger.info(f"Response: {task_response}")
         return task_response
+
+    def construct_llama_query(self, messages: list, functions: List[Dict[str, str]] = None,
+                       function_call: Union[str, Dict[str, str]] = None):
+        return {
+            "model": self.model_name,
+            "messages": messages,
+            "functions": functions,
+            "function_call":function_call
+        }

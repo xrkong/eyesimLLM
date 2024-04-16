@@ -1,0 +1,52 @@
+[
+    {
+    "type": "function",
+    "function": {
+      "name": "VWStraight",
+      "description": "Move straight forward.",
+      "parameters": {
+        "type": "object",
+        "title": "VWStraight",
+        "properties": {
+          "dist": {
+            "type": "integer",
+            "description": "The distance to drive forward in mm."
+          },
+          "lin_speed": {
+            "type": "integer",
+            "description": "The linear speed of the vehicle in mm/s."
+          }
+        }
+      },
+      "required": [
+        "dist",
+        "lin_speed"
+      ]
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "VWTurn",
+      "description": "Turn left or right.",
+      "parameters": {
+        "type": "object",
+        "title": "VWTurn",
+        "properties": {
+          "angle": {
+            "type": "integer",
+            "description": "The angle to turn in degrees."
+          },
+          "ang_speed": {
+            "type": "integer",
+            "description": "The angular speed of the vehicle in degrees/s."
+          }
+        }
+      },
+      "required": [
+        "angle",
+        "ang_speed"
+      ]
+    }
+  }
+]

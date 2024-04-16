@@ -4,3 +4,4 @@ EyeSim-Python==1.2.4
 numpy
 pandas
 openai
+llamaapi==0.1.36

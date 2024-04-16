@@ -5,8 +5,8 @@ import logging
 import pandas as pd
 from eye import *
 from openai import OpenAI
+from llamaapi import LlamaAPI
 from dotenv import load_dotenv, find_dotenv
-
 import numpy as np
 from llm.llm_request import LLMRequest
 
@@ -15,7 +15,7 @@ SAFE = 200
 _ = load_dotenv(find_dotenv())
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
+llama = LlamaAPI(os.environ.get("LLAMA_API_KEY"))
 client = OpenAI(
     # This is the default and can be omitted
     api_key=os.environ.get("OPENAI_API_KEY"),
@@ -24,9 +24,11 @@ client = OpenAI(
 with open("llm/prompt/system.txt", 'r') as system_file:
     system = system_file.read()
 
-with open("llm/prompt/functions.json", 'r') as tools_file:
+with open("llm/prompt/tools.json", 'r') as tools_file:
     tools = json.load(tools_file)
 
+with open("llm/prompt/functions.json", 'r') as functions_file:
+    functions = json.load(functions_file)
 
 
 def construct_predicted_result(function, argument, predicted_function, predicted_arguments):
@@ -80,6 +82,26 @@ def openai_query(model_name: str, status: str):
         return e
 
 
+def llama_query(model_name:str, status: str):
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": status}
+    ]
+    req = LLMRequest(model_name=model_name)
+    api_request_json = req.construct_llama_query(messages=messages, functions=functions, function_call="auto")
+    try:
+        response = llama.run(api_request_json)
+        print(response.json())
+        command = response.json()['choices'][0]['message']['function_call']
+        logger.info(command)
+        return command['name'], command['arguments']
+    except Exception as e:
+        print("Unable to generate ChatCompletion response")
+        print(f"Exception: {e}")
+        return e
+
+
+
 def llm_query(baseurl: str, model_name: str, status: str):
     req = LLMRequest(baseurl=baseurl, model_name=model_name)
     messages = [
@@ -91,7 +113,6 @@ def llm_query(baseurl: str, model_name: str, status: str):
     command = json.loads(response['desc'])['choices'][0]['message']['tool_calls'][0]['function']
     logger.info(command)
     return command["name"], json.loads(command["arguments"])
-
 
 def red_detector(img):
     """
