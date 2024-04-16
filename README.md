@@ -33,11 +33,13 @@ Using LLM (local or cloud) to control eyebots in the simulator.
    docker exec -it eyesim bash
    cd ws/src
    # HARD CODED VERSION
-   python3 finder.py
+   python3.9 finder.py
    # SELF-HOSTED LLM
-   python3 finder_llm.py
+   python3.9 finder_llm.py
    # GPT4
-   python3 finder_llm_openai.py
+   python3.9 finder_llm_openai.py
+   # llama api
+   python3.9 finder_llm_llama.py
    ```
 
 ## References
