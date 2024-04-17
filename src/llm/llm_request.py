@@ -35,9 +35,7 @@ class LLMRequest:
             "name": self.name,
             "model_name": self.model_name,
             "llm_task_type": self.llm_task_type,
-            "messages": messages,
-            "tools": tools,
-            "tool_choice":tool_choice
+            "messages": messages
         })
         response = requests.request("POST", f"{self.baseurl}custom_llm/", headers=headers,
                                     data=payload)
@@ -74,6 +72,5 @@ class LLMRequest:
         return {
             "model": self.model_name,
             "messages": messages,
-            "functions": functions,
-            "function_call":function_call
+            "max_tokens": 1000
         }
