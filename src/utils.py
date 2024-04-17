@@ -9,6 +9,7 @@ from llamaapi import LlamaAPI
 from dotenv import load_dotenv, find_dotenv
 import numpy as np
 from llm.llm_request import LLMRequest
+import re
 
 SAFE = 200
 
@@ -23,6 +24,9 @@ client = OpenAI(
 
 with open("llm/prompt/system.txt", 'r') as system_file:
     system = system_file.read()
+
+with open("llm/prompt/system_qa.txt", 'r') as systemqa_file:
+    system_qa = systemqa_file.read()
 
 with open("llm/prompt/tools.json", 'r') as tools_file:
     tools = json.load(tools_file)
@@ -84,17 +88,21 @@ def openai_query(model_name: str, status: str):
 
 def llama_query(model_name:str, status: str):
     messages = [
-        {"role": "system", "content": system},
+        {"role": "system", "content": system_qa},
         {"role": "user", "content": status}
     ]
     req = LLMRequest(model_name=model_name)
-    api_request_json = req.construct_llama_query(messages=messages, functions=functions, function_call="auto")
+    api_request_json = req.construct_llama_query(messages=messages)
     try:
         response = llama.run(api_request_json)
         print(response.json())
-        command = response.json()['choices'][0]['message']['function_call']
+        command = response.json()['choices'][0]['message']['content']
+        json_start = command.find('{')
+        json_end = command.rfind('}') + 1
+        json_string = command[json_start:json_end]
+        command = json.loads(json_string)
         logger.info(command)
-        return command['name'], command['arguments']
+        return command['name'], (command['arguments'])
     except Exception as e:
         print("Unable to generate ChatCompletion response")
         print(f"Exception: {e}")
@@ -105,14 +113,31 @@ def llama_query(model_name:str, status: str):
 def llm_query(baseurl: str, model_name: str, status: str):
     req = LLMRequest(baseurl=baseurl, model_name=model_name)
     messages = [
-        {"role": "system", "content": system},
+        {"role": "system", "content": system_qa},
         {"role": "user", "content": status}
     ]
 
     response = req.get_completion(messages=messages, tools=tools, tool_choice="auto", query_interval=1)
-    command = json.loads(response['desc'])['choices'][0]['message']['tool_calls'][0]['function']
+    command = json.loads(response['desc'])['choices'][0]['message']['content']
+    # Your string
+    # Regular expression pattern to match function name and arguments
+    pattern = r'(\w+)\(([^)]*)\)'
+
+    # Match the pattern in the string
+    matches = re.match(pattern, command)
+
+    if matches:
+        # Extract function name
+        function_name = matches.group(1)
+
+        # Extract arguments and their values
+        arguments = {}
+        for arg in matches.group(2).split(','):
+            key, value = arg.strip().split('=')
+            arguments[key.strip()] = int(value.strip())
+        command = {"name": function_name, "arguments": arguments}
     logger.info(command)
-    return command["name"], json.loads(command["arguments"])
+    return command['name'], (command['arguments'])
 
 def red_detector(img):
     """
