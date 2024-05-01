@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
 from eye import *
-from llm.llm_request import LLMRequest
 import logging
 
 logging.basicConfig(level=logging.INFO)

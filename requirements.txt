@@ -4,4 +4,7 @@ EyeSim-Python==1.2.4
 numpy
 pandas
 openai
-llamaapi==0.1.36
+transformers
+huggingface_hub
+torch==2.2.0
+accelerate
