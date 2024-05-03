@@ -4,10 +4,14 @@ services:
   eyesim:
     image: eyesim1.5.2:latest
     container_name: eyesim
+    #user: root
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - .config:/home/eyesim/.config/   
       - .:/home/eyesim/ws
+      #- /etc/passwd:/etc/passwd:ro
     environment:
       - DISPLAY
-    command: eyesim
+      - EYESIM_MAP="worlds/aquatic/mountain.wld"
+    command: tail -F anything 
+    #command: sudo -s ws/set_sim.bash && eyesim
