@@ -8,16 +8,12 @@ from typing import Union, List, Dict
 from llm_call.config import MODELS
 
 _ = load_dotenv(find_dotenv())
-headers = {
-    'Authorization': f'Token {os.environ["REMOTE_API_TOKEN"]}',
-    'Content-Type': 'application/json'
-}
 
 
 class LLAMARequest:
     def __init__(self,
-                 request_endpoint:str="custom_llm",
-                 query_interval: int=0.2,
+                 request_endpoint: str = "custom_llm",
+                 query_interval: int = 0.2,
                  remote_url: bool = True,
                  task_type: str = "gpu",
                  task_name: str = "eyesim",
@@ -35,6 +31,7 @@ class LLAMARequest:
         """
 
         self.logger = logging.getLogger(__name__)
+        self.headers = None
         self.baseurl = self.set_baseurl(remote_url)
         self.model_type = self.set_model_type(model_name)
         self.request_endpoint = request_endpoint
@@ -59,8 +56,16 @@ class LLAMARequest:
     def set_baseurl(self, remote_url: bool):
         self.logger.info(f"Setting baseurl (True: remote, False: local): {remote_url}")
         if remote_url:
+            self.headers = self.set_headers(os.environ["REMOTE_API_TOKEN"])
             return "https://api.nlp-tlp.org/queue_task/"
-        return "http://host.docker.internal:8000/queue_task/"
+        self.headers = self.set_headers(os.environ["LOCAL_API_TOKEN"])
+        return "http://localhost:8000/queue_task/"
+
+    def set_headers(self, token: str):
+        return {
+            'Authorization': f'Token {token}',
+            'Content-Type': 'application/json'
+        }
 
     def queue_task(self, messages: List[Union[dict[str, str]]]) -> Union[None, int]:
         self.logger.info(f"Queuing LLM task for model {self.model_name}")
@@ -69,16 +74,17 @@ class LLAMARequest:
             "name": self.task_name,
             "model_name": self.model_name,
             "llm_task_type": self.llm_task_type,
-            "messages": messages
+            "messages": messages,
+            "response_format": {"type":"json_object", "schema":'{"thought":"string", "reply":"string"}'}
         })
-        response = requests.request("POST", f"{self.baseurl}{self.request_endpoint}/", headers=headers,
+        response = requests.request("POST", f"{self.baseurl}{self.request_endpoint}/", headers=self.headers,
                                     data=payload)
         response_json = json.loads(response.text)
         task_id = response_json.get("task_id")
         return task_id
 
     def task_status(self) -> Dict:
-        response = requests.request("GET", f"{self.baseurl}{self.task_id}/status/", headers=headers)
+        response = requests.request("GET", f"{self.baseurl}{self.task_id}/status/", headers=self.headers)
         response_json = json.loads(response.text)
         return response_json
 
