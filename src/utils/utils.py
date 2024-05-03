@@ -3,8 +3,6 @@ import os
 import pandas as pd
 from eye import *
 import numpy as np
-from llm_call.config import MT_LLAMA, HF_LLAMA
-from typing import Any
 
 
 
@@ -34,15 +32,6 @@ def save_predicted_result(res, max_col, dist, function_name, arguments, model_na
         predict_item = construct_predicted_result("VWStraight", json.dumps({"dist": 100, "lin_speed": 100}), function_name, json.dumps(arguments))
     predicts_df = pd.concat([predicts_df, predict_item], ignore_index=True)
     predicts_df.to_csv(f'llm/data/predicts_{model_name}.csv', index=False)
-
-
-def response_handler(response: Any, model_type="gpt"):
-    if model_type == HF_LLAMA:
-        return json.loads(
-            json.loads(response['desc'])[0]["generated_text"].split("\n\n")[-1])
-    if model_type == MT_LLAMA:
-        return json.loads(json.loads(response['desc'])["choices"][0]["message"]["content"])
-    return response.choices[0].message.tool_calls[0].function
 
 def red_detector(img):
     """
