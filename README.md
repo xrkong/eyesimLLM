@@ -25,21 +25,17 @@ Using LLM (local or cloud) to control eyebots in the simulator.
     source venv/bin/activate
     pip install -r requirements.txt
     ```
- - Create .env file and put `API_TOKEN` or `OPENAI_API_KEY` into it.
+ - Create .env file and put `REMOTE_API_TOKEN` or `OPENAI_API_KEY` into it.
 
  - Execute the demo
    ```bash
    docker compose up
    docker exec -it eyesim bash
-   cd ws/src
+   cd ws/src/scripts
    # HARD CODED VERSION
    python3.9 finder.py
-   # SELF-HOSTED LLM
+   # LLM
    python3.9 finder_llm.py
-   # GPT4
-   python3.9 finder_llm_openai.py
-   # llama api
-   python3.9 finder_llm_llama.py
    ```
 
 ## References
