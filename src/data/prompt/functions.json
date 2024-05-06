@@ -1,18 +1,18 @@
 [
   {
     "name": "VWSetSpeed",
-    "description": "Set the linear speed (mm/s) and angular speed (degrees/s) of the vehicle.",
+    "description": "Set the linear speed (mm/s) and angular speed (degrees/s) of the robot.",
     "parameters": {
       "type": "object",
       "title": "VWSetSpeed",
       "properties": {
         "speed": {
           "type": "integer",
-          "description": "The linear speed of the vehicle in mm/s."
+          "description": "The linear speed of the robot in mm/s."
         },
         "angspeed": {
           "type": "integer",
-          "description": "The angular speed of the vehicle in degrees/s."
+          "description": "The angular speed of the robot in degrees/s."
         }
       }
     },
