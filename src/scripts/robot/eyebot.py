@@ -23,19 +23,20 @@ class EyeBot:
 
     def LLM_control(self):
         while True:
+            if self.safety_event.is_set():
+                # TODO: Triggering safety methods
+                self.stop()
+                self.safety_event.clear()
+                # self.llm_request_event.set()
             # trigger a LLM request
             if self.llm_request_event.is_set():
+                self.move(50, 0)
                 # TODO: implement LLM control
                 # 1. read status data from logs
                 # 2. retrieve docs for planning
                 # 3. organise prompt
                 # 4. send prompt to LLM
                 self.llm_request_event.clear()
-            if self.safety_event.is_set():
-                # TODO: Triggering safety methods
-                self.stop()
-                self.safety_event.clear()
-                self.llm_request_event.set()
             time.sleep(1)
 
     def user_query(self):
@@ -51,9 +52,11 @@ class EyeBot:
         llm_control_thread.start()
         user_query_thread = threading.Thread(target=self.user_query)
         user_query_thread.start()
+        self.llm_request_event.set()
         while True:
             # TODO: implement safety mechanism
             self.psd_sensor_values = [PSDGet(i) for i in range(1, 7)]
-            if any(value < 100 for value in self.psd_sensor_values):
-                self.llm_request_event.set()
+            print(self.psd_sensor_values)
+            if any(value < 200 for value in self.psd_sensor_values):
+                self.safety_event.set()
             time.sleep(1)
