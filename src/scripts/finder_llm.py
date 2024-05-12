@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-from eye import *
-import sys
-sys.path.append('..')
-from utils.utils import save_predicted_result, red_detector
-from llm_call.llm_request import LLMRequest
 import argparse
 import logging
+
+from eye import *
+
+from src.llm.llm_request import LLMRequest
+from utils.utils import red_detector, save_predicted_result
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

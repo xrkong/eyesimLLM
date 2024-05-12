@@ -1,6 +1,7 @@
-import time
-from eye import *
 import threading
+import time
+
+from eye import *
 
 condition_event = threading.Event()
 

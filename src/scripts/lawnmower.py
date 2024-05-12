@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
-from eye import *
-import numpy as np
-import random as rd
 import math
+import random as rd
+
+import numpy as np
+from eye import *
+
 
 class S4_Robot():
 

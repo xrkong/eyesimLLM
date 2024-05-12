@@ -1,10 +1,9 @@
 import json
 import os
+
+import numpy as np
 import pandas as pd
 from eye import *
-import numpy as np
-
-
 
 
 def construct_predicted_result(function, argument, predicted_function, predicted_arguments):

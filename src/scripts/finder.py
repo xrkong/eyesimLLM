@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+import logging
+
 import numpy as np
 from eye import *
-import logging
 
 logging.basicConfig(level=logging.INFO)
 SAFE = 200

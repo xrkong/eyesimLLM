@@ -8,3 +8,5 @@ transformers
 huggingface_hub
 torch==2.2.0
 accelerate
+httpx
+tqdm

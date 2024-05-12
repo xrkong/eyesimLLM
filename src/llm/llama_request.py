@@ -1,10 +1,11 @@
-import requests
-import os
 import json
 import logging
+import os
 import time
-from dotenv import load_dotenv, find_dotenv
-from typing import Union, List, Dict
+from typing import Dict, List, Union
+
+import requests
+from dotenv import find_dotenv, load_dotenv
 from llm_call.config import MODELS
 
 _ = load_dotenv(find_dotenv())

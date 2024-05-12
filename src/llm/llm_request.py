@@ -1,36 +1,41 @@
 import json
-import os
 import logging
-from openai import OpenAI
-from dotenv import load_dotenv, find_dotenv
-from llm_call.llama_request import LLAMARequest
-from llm_call.config import MT_LLAMA, HF_LLAMA
-from typing import Any
 import os
 
+import httpx
+from constant import LLM_MODEL_DIR, PROMPT_DIR
+from dotenv import find_dotenv, load_dotenv
+from llama_cpp import Llama, LlamaGrammar
+from llm_call.llama_request import LLAMARequest
+from openai import OpenAI
+from tqdm import tqdm
 
 _ = load_dotenv(find_dotenv())
 
 class LLMRequest:
-    def __init__(self, system: str = None):
+    def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.system = system
-        self.tools = None
-        self.functions = None
+        self.system = None
+        self.user = None
         self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        self.llm = None
         self.init_request()
 
+
+    def init_local_llama(self):
+        return Llama(
+            model_path=F"{LLM_MODEL_DIR}/llama2/llama-2-7b-chat.Q4_K_M.gguf",
+            n_gpu_layers=0,
+            embedding=True,
+            n_ctx=4096,
+        )
+
     def init_request(self):
-        current_dir = os.path.dirname(__file__)
-        base_dir = os.path.join(current_dir, '../data/prompt/')
-        with open(f"{base_dir}system.txt", 'r') as system_file:
+        with open(f"{PROMPT_DIR}/system.txt", 'r') as system_file:
             self.system = system_file.read()
 
-        with open(f"{base_dir}tools.json", 'r') as tools_file:
-            self.tools = json.load(tools_file)
-
-        with open(f"{base_dir}functions.json", 'r') as functions_file:
-            self.functions = json.load(functions_file)
+        with open(f"{PROMPT_DIR}/user.txt", 'r') as user_file:
+            self.user = user_file.read()
 
     def query(self, query_type: str, model_name: str, user: str):
         if query_type == "openai":
@@ -47,8 +52,7 @@ class LLMRequest:
             response = self.client.chat.completions.create(
                 model=model_name,
                 messages=messages,
-                tools=self.tools,
-                tool_choice="auto",
+                response_format={"type":"json_object"}
             )
             self.logger.info(response)
             # command = self.response_handler(response=response)
@@ -80,3 +84,16 @@ class LLMRequest:
     #     if model_type == MT_LLAMA:
     #         return json.loads(json.loads(response['desc'])["choices"][0]["message"]["content"])
     #     return response.choices[0].message.tool_calls[0].function
+
+    def local_llama(self, user: str):
+        if self.llm is None:
+            self.llm = self.init_local_llama()
+
+        messages = [
+            {"role": "system", "content": self.system},
+            {"role": "user", "content": user}
+        ]
+        grammar_text = httpx.get(
+            "https://raw.githubusercontent.com/ggerganov/llama.cpp/master/grammars/json_arr.gbnf").text
+        grammar = LlamaGrammar.from_string(grammar_text)
+        return self.llm.create_chat_completion(messages=messages, grammar=grammar, max_tokens=-1)
