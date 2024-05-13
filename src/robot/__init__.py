@@ -66,7 +66,7 @@ class EyebotBase:
         self.angspeed = angspeed
         VWSetSpeed(self.speed, self.angspeed)
 
-    def data_collection(self, task_name: str):
+    def data_collection(self):
         """
         collecting data during the robot's operation
         """
