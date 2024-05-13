@@ -2,8 +2,8 @@ from src.robot import *
 
 
 class EyebotLLM(EyebotBase):
-    def __init__(self, speed: int = 0, angspeed: int = 0):
-        super().__init__(speed, angspeed)
+    def __init__(self, task_name:str, speed: int = 0, angspeed: int = 0):
+        super().__init__(task_name, speed, angspeed)
         self.safety_event = threading.Event()
         self.llm_request_event = threading.Event()
         self.logger = logging.getLogger(__name__)
@@ -12,7 +12,6 @@ class EyebotLLM(EyebotBase):
         """
         control the robot's movement based on the events
         """
-        count = 0
         while True:
             if self.safety_event.is_set():
                 self.logger.info("Safety event triggered!")
@@ -23,7 +22,7 @@ class EyebotLLM(EyebotBase):
             # trigger a LLM request
             if self.llm_request_event.is_set():
                 self.logger.info("LLM request triggered!")
-                self.move(50, 0)
+                self.move(50, 20)
                 # TODO: implement LLM control
                 # 1. read status data from logs
                 # 2. retrieve docs for planning
@@ -58,7 +57,10 @@ class EyebotLLM(EyebotBase):
             # TODO: implement safety mechanism
             self.img = CAMGet()
             LCDImage(self.img)
-            self.psd_sensor_values = [PSDGet(i) for i in range(1, 7)]
-            if any(value < 200 for value in self.psd_sensor_values):
+            self.psd_values["front"] = PSDGet(PSD_FRONT)
+            self.psd_values["left"] = PSDGet(PSD_LEFT)
+            self.psd_values["right"] = PSDGet(PSD_RIGHT)
+            self.psd_values["back"] = PSDGet(PSD_BACK)
+            if any(value < 200 for key, value in self.psd_values.items()):
                 self.safety_event.set()
             time.sleep(SAFETY_EVENT_CHECK_FREQUENCY)
