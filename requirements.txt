@@ -10,3 +10,4 @@ torch==2.2.0
 accelerate
 httpx
 tqdm
+neo4j==5.20.0
