@@ -1,4 +1,4 @@
-from robot import *
+from src.robot import *
 
 
 class EyebotLLM(EyebotBase):

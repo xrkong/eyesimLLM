@@ -1,6 +1,5 @@
 import logging
-
-from robot.eyebot_llm import EyebotLLM
+from src.robot.eyebot_llm import EyebotLLM
 
 logging.basicConfig(level=logging.INFO)
 
