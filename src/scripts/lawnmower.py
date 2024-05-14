@@ -12,7 +12,7 @@ class S4_Robot():
     def __init__(self):
         
         # --- Define variables
-        self.min_distance = 200
+        self.min_distance = 300
         self.default_lin_speed = 100
         self.default_omega = 60
 

@@ -26,7 +26,7 @@ class EyebotBase:
         self.logger = logging.getLogger(__name__)
 
         (IMAGE_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
-        self.data_collection_thread = threading.Thread(target=self.data_collection, args=["test2"])
+        self.data_collection_thread = threading.Thread(target=self.data_collection)
 
         CAMInit(QVGA)
 
