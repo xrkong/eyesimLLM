@@ -2,6 +2,7 @@ import csv
 import logging
 import threading
 import time
+from src.utils.utils import cam2image
 
 import pandas as pd
 from eye import *
@@ -34,7 +35,7 @@ class EyebotBase:
         """
         return the robot's state as a dictionary for data collection
         """
-        img_path = f'{IMAGE_DIR}/{self.task_name}/{self.timer}.jpg'
+        img_path = f'{IMAGE_DIR}/{self.task_name}/{self.timer}.png'
         return {
             "speed": self.speed,
             "angspeed": self.angspeed,
@@ -77,8 +78,7 @@ class EyebotBase:
                 current_state = self.to_dict()
                 fieldnames = current_state.keys()
                 # save the image
-                with open(current_state["img_path"], 'wb') as f:
-                    f.write(self.img)
+                cam2image(self.img).save(current_state["img_path"])
                 # save the data
                 with open(file_path, mode='a', newline='') as file:
                     writer = csv.DictWriter(file, fieldnames=fieldnames)

@@ -1,5 +1,6 @@
 import json
 import os
+from PIL import Image
 
 import numpy as np
 import pandas as pd
@@ -56,3 +57,10 @@ def red_detector(img):
     max_col = np.argmax(red_count)
     max_value = red_count[max_col]
     return [True, max_col, max_value]
+
+def cam2image(image):
+    """
+    Convert the QVGA image from the camera to a PIL image.
+    """
+    image = Image.frombytes('RGB', (QVGA_X, QVGA_Y), image)
+    return image
