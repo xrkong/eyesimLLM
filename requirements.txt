@@ -11,4 +11,5 @@ accelerate
 httpx
 tqdm
 neo4j==5.20.0
+pygame
 pillow
