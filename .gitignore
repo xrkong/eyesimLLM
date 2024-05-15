@@ -164,3 +164,11 @@ cython_debug/
 .config/
 
 experiment/data/*
+
+database/data/*
+
+database/import/*
+
+database/logs/*
+
+database/plugins/*

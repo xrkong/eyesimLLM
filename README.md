@@ -13,7 +13,7 @@ Using LLM (local or cloud) to control eyebots in the simulator.
 - [ ] Design some missions for eyebots
 
 
-## Set up the demo
+## 1. Set up the demo using docker
 
  - Set up docker
    ```bash
@@ -25,7 +25,7 @@ Using LLM (local or cloud) to control eyebots in the simulator.
     source venv/bin/activate
     pip install -r requirements.txt
     ```
- - Create .env file and put `REMOTE_API_TOKEN` or `OPENAI_API_KEY` into it.
+ - ~~Create .env file and put `REMOTE_API_TOKEN` or `OPENAI_API_KEY` into it.~~
 
  - Execute the demo
    ```bash
@@ -37,6 +37,26 @@ Using LLM (local or cloud) to control eyebots in the simulator.
    # LLM
    python3.9 finder_llm.py
    ```
+
+## 2. Set up the demo not using docker
+
+ - set up virtual environment
+   ```bash
+   python -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+ - start eyesim
+   ```bash
+   eyesim
+   ```
+
+ - Execute the demo
+   ```bash
+   python run.py
+   ```
+
 
 ## References
 
