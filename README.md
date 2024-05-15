@@ -38,6 +38,16 @@ Using LLM (local or cloud) to control eyebots in the simulator.
    python3.9 finder_llm.py
    ```
 
+## Debug
+1. I have issue like this, how to fix this?
+```
+libGL error: MESA-LOADER: failed to open iris: /usr/lib/dri/iris_dri.so:
+```
+answer:
+```
+conda install -c conda-forge libstdcxx-ng
+```
+
 ## References
 
 [API Documentation](https://api.nlp-tlp.org/redoc/#tag/queue_task)
