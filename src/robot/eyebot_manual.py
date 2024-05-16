@@ -1,5 +1,6 @@
 from src.robot import *
 
+
 class EyebotManual(EyebotBase):
     def __init__(self, task_name:str, speed: int = 0, angspeed: int = 0):
         super().__init__(task_name, speed, angspeed)

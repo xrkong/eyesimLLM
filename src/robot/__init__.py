@@ -2,12 +2,11 @@ import csv
 import logging
 import threading
 import time
-from src.utils.utils import cam2image
-import pygame
-from pygame.locals import *
 
 import pandas as pd
+import pygame
 from eye import *
+from pygame.locals import *
 
 from src.utils.constant import (
     CONTROL_EVENT_CHECK_FREQUENCY,
@@ -16,6 +15,7 @@ from src.utils.constant import (
     IMAGE_DIR,
     SAFETY_EVENT_CHECK_FREQUENCY,
 )
+from src.utils.utils import cam2image
 
 
 class EyebotBase:

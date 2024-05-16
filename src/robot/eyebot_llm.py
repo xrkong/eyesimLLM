@@ -1,6 +1,8 @@
-from src.robot import *
 import pygame
 from pygame.locals import *
+
+from src.robot import *
+
 
 class EyebotLLM(EyebotBase):
     def __init__(self, task_name:str, speed: int = 0, angspeed: int = 0):
