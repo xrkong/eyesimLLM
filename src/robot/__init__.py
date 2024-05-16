@@ -2,6 +2,7 @@ import csv
 import logging
 import threading
 import time
+from typing import Dict, List
 
 import pandas as pd
 import pygame
@@ -49,6 +50,7 @@ class EyebotBase:
             "timestamp": self.timer
         }
 
+
     def move(self, speed, angspeed):
         """
         move the robot with the given speed and angspeed
@@ -68,6 +70,7 @@ class EyebotBase:
         self.speed = speed
         self.angspeed = angspeed
         VWSetSpeed(self.speed, self.angspeed)
+
 
     def manual_control(self):
         """

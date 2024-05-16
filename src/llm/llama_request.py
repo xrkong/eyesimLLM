@@ -6,7 +6,8 @@ from typing import Dict, List, Union
 
 import requests
 from dotenv import find_dotenv, load_dotenv
-from llm_call.config import MODELS
+
+from src.llm.config import MODELS
 
 _ = load_dotenv(find_dotenv())
 
