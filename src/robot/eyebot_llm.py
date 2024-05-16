@@ -1,6 +1,3 @@
-import pygame
-from pygame.locals import *
-
 from src.robot import *
 
 
@@ -8,7 +5,7 @@ class EyebotLLM(EyebotBase):
     def __init__(self, task_name:str, speed: int = 0, angspeed: int = 0):
         super().__init__(task_name, speed, angspeed)
         self.llm_request_event = threading.Event()
-        self.maunal_event = threading.Event()
+        self.manual_event = threading.Event()
         self.logger = logging.getLogger(__name__)
 
     def control(self):
@@ -32,7 +29,7 @@ class EyebotLLM(EyebotBase):
                 # 3. organise prompt
                 # 4. send prompt to LLM
                 self.llm_request_event.clear()
-            if self.maunal_event.is_set() and not self.safety_event.is_set():
+            if self.manual_event.is_set() and not self.safety_event.is_set():
                 #self.logger.info("Manual control! "+ str(self.safety_event.is_set()))
                 self.manual_control()
                 self.llm_request_event.clear()
@@ -49,7 +46,7 @@ class EyebotLLM(EyebotBase):
         # 4. display/record the response
         pass
 
-    def run(self, drive_mode="manual"):
+    def run(self, drive_mode=None):
         """
         run the robot
         """
@@ -60,7 +57,7 @@ class EyebotLLM(EyebotBase):
         user_query_thread.start()
 
         if drive_mode == "manual":
-            self.maunal_event.set()
+            self.manual_event.set()
             # initialize pygame
             pygame.init()
             pygame.font.init()
@@ -68,5 +65,4 @@ class EyebotLLM(EyebotBase):
             pygame.display.set_caption("Manual Control Window")
         else:
             self.llm_request_event.set()
-
         self.safety_check()
