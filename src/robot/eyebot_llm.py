@@ -5,7 +5,6 @@ from pygame.locals import *
 class EyebotLLM(EyebotBase):
     def __init__(self, task_name:str, speed: int = 0, angspeed: int = 0):
         super().__init__(task_name, speed, angspeed)
-        self.safety_event = threading.Event()
         self.llm_request_event = threading.Event()
         self.maunal_event = threading.Event()
         self.logger = logging.getLogger(__name__)
@@ -68,49 +67,4 @@ class EyebotLLM(EyebotBase):
         else:
             self.llm_request_event.set()
 
-        while True:
-            # TODO: implement safety mechanism
-            self.img = CAMGet()
-            LCDImage(self.img)
-            self.psd_values["front"] = PSDGet(PSD_FRONT)
-            self.psd_values["left"] = PSDGet(PSD_LEFT)
-            self.psd_values["right"] = PSDGet(PSD_RIGHT)
-            self.psd_values["back"] = PSDGet(PSD_BACK)
-            if any(value < 300 for key, value in self.psd_values.items()):
-                self.safety_event.set()
-            time.sleep(SAFETY_EVENT_CHECK_FREQUENCY)
-
-    def manual_control(self):
-        max_speed= 300
-        min_speed= 0
-        speed_increment = 25
-        max_steer= 90
-        min_steer= -90
-        steer_increment = 5
-
-        pygame.time.Clock().tick(30)
-        pygame.event.pump()
-        keys = pygame.key.get_pressed()
-        if keys[K_w]:
-            self.speed = self.speed + speed_increment
-        if keys[K_s]:
-            self.speed = self.speed - speed_increment
-        if keys[K_a]:
-            self.angspeed = self.angspeed + steer_increment
-        if keys[K_d]:
-            self.angspeed = self.angspeed - steer_increment
-
-        if self.speed < min_speed:
-            self.speed = min_speed
-        elif self.speed > max_speed:
-            self.speed = max_speed
-        
-        if self.angspeed < min_steer:
-            self.angspeed = min_steer
-        elif self.angspeed > max_steer:
-            self.angspeed = max_steer
-
-        if not (keys[K_a] or keys[K_d]):
-            self.angspeed = 0
-
-        self.move(self.speed, self.angspeed)
+        self.safety_check()
