@@ -20,20 +20,37 @@ from src.utils.utils import cam2image, lidar2image
 
 
 class EyebotBase:
-    def __init__(self, task_name:str, speed: int = 0, angspeed: int = 0):
+    def __init__(self, task_name:str):
+
+        """
+        Initialize the EyebotBase class
+        Args:
+        task_name (str): the name of the task
+        speed (int): the speed of the robot
+        angspeed (int): the angular speed of the robot
+        img (numpy array): the image from the camera
+        scan (numpy array): the lidar scan data
+        experiment_time (int): the time of the experiment
+        logger (logging.Logger): the logger object
+        safety_event (threading.Event): the safety event
+        data_collection_thread (threading.Thread): the data collection thread
+        file_path (str): the file path for saving the data
+        """
+
         self.task_name = task_name
-        self.speed = speed
-        self.angspeed = angspeed
-        self.img = None
-        self.psd_values = {"front": 0, "left": 0, "right": 0, "back": 0}
-        self.scan = None
+        self.speed = 0
+        self.angspeed = 0
+        CAMInit(QVGA)
+        self.img = CAMGet()
+        self.scan = LIDARGet()
         self.experiment_time = 0
         self.logger = logging.getLogger(__name__)
         self.safety_event = threading.Event()
         (IMAGE_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
+        self.file_path = f'{DATA_DIR}/{self.task_name}.csv'
         self.data_collection_thread = threading.Thread(target=self.data_collection)
 
-        CAMInit(QVGA)
+
 
     def to_dict(self):
         """
@@ -47,10 +64,7 @@ class EyebotBase:
             "angspeed": self.angspeed,
             "img_path": img_path,
             "lidar_path": lidar_path,
-            # "psd_front": self.psd_values["front"],
-            # "psd_left": self.psd_values["left"],
-            # "psd_right": self.psd_values["right"],
-            # "psd_back": self.psd_values["back"],
+            "safety_event": self.safety_event.is_set(),
         }
 
 
@@ -142,7 +156,6 @@ class EyebotBase:
         check the safety of the robot
         """
         while True:
-            # TODO: implement safety mechanism
             self.img = CAMGet()
             LCDImage(self.img)
             self.scan = LIDARGet()
@@ -160,20 +173,18 @@ class EyebotBase:
         """
         self.logger.info("Data collection started!")
         while True:
-            if self.speed != 0 or self.angspeed != 0:
-                file_path = f'{DATA_DIR}/{self.task_name}.csv'
-                current_state = self.to_dict()
-                fieldnames = current_state.keys()
-                # save the image
-                cam2image(self.img).save(current_state["img_path"])
-                lidar2image(scan=list(self.scan), experiment_time=str(current_state['experiment_time']), save_path=current_state["lidar_path"])
-                # save the data
-                with open(file_path, mode='a', newline='') as file:
-                    writer = csv.DictWriter(file, fieldnames=fieldnames)
-                    # Write headers only if the file is empty
-                    if file.tell() == 0:
-                        writer.writeheader()
-                    writer.writerow(current_state)
+            current_state = self.to_dict()
+            fieldnames = current_state.keys()
+            # save the image
+            cam2image(self.img).save(current_state["img_path"])
+            lidar2image(scan=list(self.scan), experiment_time=str(current_state['experiment_time']), save_path=current_state["lidar_path"])
+            # save the data
+            with open(self.file_path, mode='a', newline='') as file:
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                # Write headers only if the file is empty
+                if file.tell() == 0:
+                    writer.writeheader()
+                writer.writerow(current_state)
             time.sleep(DATA_COLLECTION_FREQUENCY)
             self.experiment_time += DATA_COLLECTION_FREQUENCY
 

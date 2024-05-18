@@ -4,8 +4,8 @@ from src.robot import *
 
 
 class EyebotLLM(EyebotBase):
-    def __init__(self, task_name:str, speed: int = 0, angspeed: int = 0):
-        super().__init__(task_name, speed, angspeed)
+    def __init__(self, task_name: str="llm"):
+        super().__init__(task_name=task_name)
         self.llm_request_event = threading.Event()
         self.llm_control_event = threading.Event()
         self.manual_event = threading.Event()
@@ -29,8 +29,10 @@ class EyebotLLM(EyebotBase):
         while True:
             if self.safety_event.is_set():
                 self.logger.info("Safety event triggered!")
-                self.safety_event.clear()
                 self.stop()
+                # wait for a certain time before clearing the safety event for data collection
+                time.sleep(SAFETY_EVENT_CHECK_FREQUENCY)
+                self.safety_event.clear()
                 self.llm_request_event.set()
             # trigger a LLM request
             if self.llm_request_event.is_set():

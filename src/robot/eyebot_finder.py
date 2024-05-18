@@ -4,9 +4,9 @@ from src.robot import *
 
 SAFE = 200
 
-class EyebotScript(EyebotBase):
-    def __init__(self, speed: int = 0, angspeed: int = 0):
-        super().__init__(speed, angspeed)
+class EyebotFinder(EyebotBase):
+    def __init__(self):
+        super().__init__(task_name="finder")
 
     def red_detector(self, img):
         """
