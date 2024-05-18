@@ -113,6 +113,30 @@ class EyebotBase:
 
         self.move(self.speed, self.angspeed)
 
+    def emergency_stop(self, range_degrees=30):
+        """
+        Check if the robot needs to stop based on its speed and lidar data.
+        Returns:
+        bool: True if the robot needs to stop, False otherwise.
+        """
+        # for checking the front
+        offset = 179
+        if self.speed < 0:
+            # for checking the back
+            offset = 0
+
+        # Calculate the safe stopping distance as twice the current speed
+        safe_stopping_distance = 3 * abs(self.speed)
+        degrees = []
+        # Check distances in the range around the current direction
+        for direction_to_check in range(-range_degrees, range_degrees + 1):
+            distance_in_direction = self.scan[offset + direction_to_check]
+            degrees.append((direction_to_check, distance_in_direction))
+            if distance_in_direction < safe_stopping_distance or distance_in_direction < 200:
+                return True
+        self.logger.info(degrees)
+        return False
+
     def safety_check(self):
         """
         check the safety of the robot
@@ -122,11 +146,7 @@ class EyebotBase:
             self.img = CAMGet()
             LCDImage(self.img)
             self.scan = LIDARGet()
-            # self.psd_values["front"] = PSDGet(PSD_FRONT)
-            # self.psd_values["left"] = PSDGet(PSD_LEFT)
-            # self.psd_values["right"] = PSDGet(PSD_RIGHT)
-            # self.psd_values["back"] = PSDGet(PSD_BACK)
-            if any(value < 300 for key, value in self.psd_values.items()):
+            if self.emergency_stop():
                 self.safety_event.set()
             time.sleep(SAFETY_EVENT_CHECK_FREQUENCY)
 
