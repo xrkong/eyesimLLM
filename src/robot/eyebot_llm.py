@@ -30,10 +30,8 @@ class EyebotLLM(EyebotBase):
             if self.safety_event.is_set():
                 self.logger.info("Safety event triggered!")
                 self.safety_event.clear()
-                # TODO: Triggering safety methods
                 self.stop()
-
-                # self.llm_request_event.set()
+                self.llm_request_event.set()
             # trigger a LLM request
             if self.llm_request_event.is_set():
                 self.logger.info("LLM request triggered! ")
@@ -48,9 +46,10 @@ class EyebotLLM(EyebotBase):
                 # TODO: uncomment the following line to use openai API
                 # action_list = llm.openai_query(prompt=prompt)
                 # TODO: the following line is used for template testing
-                action_list = [{"speed": 50, "angspeed": 20, "duration": 5},
+                action_list = [{"speed": 50, "angspeed": 0, "duration": 5},
                                {"speed": 30, "angspeed": -20, "duration": 5},
-                               {"speed": 40, "angspeed": 10, "duration": 5}]
+                               {"speed": 40, "angspeed": 10, "duration": 5}
+                               ]
 
                 # reset the control event to discard the previous LLM control command and accept new control command
                 self.llm_control_event.clear()
