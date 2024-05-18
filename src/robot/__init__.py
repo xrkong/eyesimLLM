@@ -16,7 +16,7 @@ from src.utils.constant import (
     IMAGE_DIR,
     SAFETY_EVENT_CHECK_FREQUENCY,
 )
-from src.utils.utils import cam2image
+from src.utils.utils import cam2image, lidar2image
 
 
 class EyebotBase:
@@ -26,7 +26,8 @@ class EyebotBase:
         self.angspeed = angspeed
         self.img = None
         self.psd_values = {"front": 0, "left": 0, "right": 0, "back": 0}
-        self.timer = 0
+        self.scan = None
+        self.experiment_time = 0
         self.logger = logging.getLogger(__name__)
         self.safety_event = threading.Event()
         (IMAGE_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
@@ -38,16 +39,18 @@ class EyebotBase:
         """
         return the robot's state as a dictionary for data collection
         """
-        img_path = f'{IMAGE_DIR}/{self.task_name}/{self.timer}.png'
+        img_path = f'{IMAGE_DIR}/{self.task_name}/{self.experiment_time}.png'
+        lidar_path = f'{IMAGE_DIR}/{self.task_name}/{self.experiment_time}_lidar.png'
         return {
+            "experiment_time": self.experiment_time,
             "speed": self.speed,
             "angspeed": self.angspeed,
             "img_path": img_path,
-            "psd_front": self.psd_values["front"],
-            "psd_left": self.psd_values["left"],
-            "psd_right": self.psd_values["right"],
-            "psd_back": self.psd_values["back"],
-            "timestamp": self.timer
+            "lidar_path": lidar_path,
+            # "psd_front": self.psd_values["front"],
+            # "psd_left": self.psd_values["left"],
+            # "psd_right": self.psd_values["right"],
+            # "psd_back": self.psd_values["back"],
         }
 
 
@@ -118,10 +121,11 @@ class EyebotBase:
             # TODO: implement safety mechanism
             self.img = CAMGet()
             LCDImage(self.img)
-            self.psd_values["front"] = PSDGet(PSD_FRONT)
-            self.psd_values["left"] = PSDGet(PSD_LEFT)
-            self.psd_values["right"] = PSDGet(PSD_RIGHT)
-            self.psd_values["back"] = PSDGet(PSD_BACK)
+            self.scan = LIDARGet()
+            # self.psd_values["front"] = PSDGet(PSD_FRONT)
+            # self.psd_values["left"] = PSDGet(PSD_LEFT)
+            # self.psd_values["right"] = PSDGet(PSD_RIGHT)
+            # self.psd_values["back"] = PSDGet(PSD_BACK)
             if any(value < 300 for key, value in self.psd_values.items()):
                 self.safety_event.set()
             time.sleep(SAFETY_EVENT_CHECK_FREQUENCY)
@@ -142,6 +146,7 @@ class EyebotBase:
                 fieldnames = current_state.keys()
                 # save the image
                 cam2image(self.img).save(current_state["img_path"])
+                lidar2image(scan=list(self.scan), experiment_time=str(current_state['experiment_time']), save_path=current_state["lidar_path"])
                 # save the data
                 with open(file_path, mode='a', newline='') as file:
                     writer = csv.DictWriter(file, fieldnames=fieldnames)
@@ -150,7 +155,7 @@ class EyebotBase:
                         writer.writeheader()
                     writer.writerow(current_state)
             time.sleep(DATA_COLLECTION_FREQUENCY)
-            self.timer += DATA_COLLECTION_FREQUENCY
+            self.experiment_time += DATA_COLLECTION_FREQUENCY
 
     def load_data_from_csv(self):
         """
