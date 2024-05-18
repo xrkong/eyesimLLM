@@ -1,10 +1,10 @@
+from typing import List, Union
+
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 from eye import *
 from PIL import Image
-import matplotlib.pyplot as plt
-from typing import List, Union
-import seaborn as sns
-import numpy as np
-
 
 
 def cam2image(image):
