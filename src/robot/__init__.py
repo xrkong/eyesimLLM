@@ -178,6 +178,8 @@ class EyebotBase:
             # save the image
             cam2image(self.img).save(current_state["img_path"])
             lidar2image(scan=list(self.scan), experiment_time=str(current_state['experiment_time']), save_path=current_state["lidar_path"])
+            [current_state['loc_x'], current_state['loc_y'], current_state['loc_phi']] = VWGetPosition()
+            # print(current_state)
             # save the data
             with open(self.file_path, mode='a', newline='') as file:
                 writer = csv.DictWriter(file, fieldnames=fieldnames)

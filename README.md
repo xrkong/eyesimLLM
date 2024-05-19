@@ -47,6 +47,12 @@ Using LLM (local or cloud) to control eyebots in the simulator.
    pip install -r requirements.txt
    ```
 
+ - Or set up with conda
+    ```bash
+    conda env create -f environment.yml
+    ```
+   
+
  - start eyesim
    ```bash
    eyesim
@@ -56,6 +62,7 @@ Using LLM (local or cloud) to control eyebots in the simulator.
    ```bash
    python run.py
    ```
+
 
 ## Debug
 1. I have issue like this, how to fix this?

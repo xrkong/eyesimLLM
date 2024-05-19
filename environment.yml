@@ -1,4 +1,4 @@
-name: esen
+name: eyeenv
 dependencies:
   - python=3.10.12
   - pip

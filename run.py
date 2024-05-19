@@ -12,4 +12,4 @@ if __name__ == '__main__':
     # robot = EyebotManual(task_name="manual_test", speed=0, angspeed=0)
     # robot  = EyebotLawnmower(task_name="lawnmower_test", speed=0, angspeed=0)
     # robot.run(drive_mode="manual")
-    robot.run()
+    robot.run(drive_mode="manual")

@@ -4,7 +4,7 @@ import os
 
 import httpx
 from dotenv import find_dotenv, load_dotenv
-from llama_cpp import Llama, LlamaGrammar
+# from llama_cpp import Llama, LlamaGrammar
 from openai import OpenAI
 from tqdm import tqdm
 
