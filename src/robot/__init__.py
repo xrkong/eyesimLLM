@@ -35,6 +35,7 @@ class EyebotBase:
         safety_event (threading.Event): the safety event
         data_collection_thread (threading.Thread): the data collection thread
         file_path (str): the file path for saving the data
+        lock (threading.Lock): the lock object
         """
 
         self.task_name = task_name
@@ -49,6 +50,7 @@ class EyebotBase:
         (IMAGE_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
         self.file_path = f'{DATA_DIR}/{self.task_name}.csv'
         self.data_collection_thread = threading.Thread(target=self.data_collection)
+        self.lock = threading.Lock()
 
 
 
@@ -176,8 +178,9 @@ class EyebotBase:
             current_state = self.to_dict()
             fieldnames = current_state.keys()
             # save the image
-            cam2image(self.img).save(current_state["img_path"])
-            lidar2image(scan=list(self.scan), experiment_time=str(current_state['experiment_time']), save_path=current_state["lidar_path"])
+            with self.lock:
+                cam2image(self.img).save(current_state["img_path"])
+                lidar2image(scan=list(self.scan), experiment_time=str(current_state['experiment_time']), save_path=current_state["lidar_path"])
             # save the data
             with open(self.file_path, mode='a', newline='') as file:
                 writer = csv.DictWriter(file, fieldnames=fieldnames)
