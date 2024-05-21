@@ -3,6 +3,7 @@ import logging
 import threading
 import time
 from typing import Dict, List
+import math
 
 import pandas as pd
 import pygame
@@ -66,7 +67,6 @@ class EyebotBase:
             "lidar_path": lidar_path,
             "safety_event": self.safety_event.is_set(),
         }
-
 
     def move(self, speed, angspeed):
         """
@@ -148,8 +148,54 @@ class EyebotBase:
             degrees.append((direction_to_check, distance_in_direction))
             if distance_in_direction < safe_stopping_distance or distance_in_direction < 200:
                 return True
-        self.logger.info(degrees)
+        # self.logger.info(degrees)
         return False
+    
+    def dog_drive(self, x, y):
+        _turn_speed = 50
+        _drive_speed = 100
+        _cur_x, _cur_y, _cur_heading = VWGetPosition()
+        _desired_heading = int(math.degrees(math.atan2(y - _cur_y, x - _cur_x)))
+        print(_desired_heading - _cur_heading)
+        
+        # Turn to face the goal
+        # VWTurn(sphi - rphi, _turn_speed)
+        # VWSetSpeed(0, -_turn_speed)
+        # time.sleep(abs(sphi - rphi)/_turn_speed)
+        # VWWait()
+        _steer = 0 
+        while (d := math.dist((_cur_x, _cur_y), (x, y))) > 100:
+            _cur_x, _cur_y, _cur_heading = VWGetPosition()
+            _desired_heading = int(math.degrees(math.atan2(y - _cur_y, x - _cur_x)))
+            print(_desired_heading - _cur_heading)
+
+            # Edge case to handle discontinuity between +180 and -180
+            rotation = _desired_heading - _cur_heading
+            if rotation > 180:
+                rotation -= 360
+            elif rotation < -180:
+                rotation += 360
+
+            print("rotation:"+str(rotation)+" desired_heading:"+str(_desired_heading)+" cur_heading:"+str(_cur_heading))
+            if _cur_heading > _desired_heading + 10:
+                _steer -= 5
+            elif _cur_heading < _desired_heading - 10:
+                _steer += 5
+            elif _cur_heading > _desired_heading + 2:
+                _steer -= 1
+            elif _cur_heading < _desired_heading - 2:
+                _steer += 1 
+            else:
+                _steer = 0
+
+            if _steer > 180:
+                _steer -= 360
+            elif _steer < -180:
+                _steer += 360
+
+            VWSetSpeed(_drive_speed, _steer)
+
+        VWSetSpeed(0, 0)
 
     def safety_check(self):
         """

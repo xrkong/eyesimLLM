@@ -19,6 +19,7 @@ class EyebotLLM(EyebotBase):
             action = action_list.pop(0)
             self.update_state(action["speed"], action["angspeed"])
             time.sleep(action["duration"])
+        self.stop()
 
     def control(self):
         """
@@ -49,8 +50,9 @@ class EyebotLLM(EyebotBase):
                 # action_list = llm.openai_query(prompt=prompt)
                 # TODO: the following line is used for template testing
                 action_list = [{"speed": 50, "angspeed": 0, "duration": 5},
-                               {"speed": 30, "angspeed": -20, "duration": 5},
-                               {"speed": 40, "angspeed": 10, "duration": 5}
+                               {"speed": 0, "angspeed": -30, "duration": 3},
+                               {"speed": 40, "angspeed": 0, "duration": 5},
+                               {"speed": 0, "angspeed": 0, "duration": 5},
                                ]
 
                 # reset the control event to discard the previous LLM control command and accept new control command
@@ -62,7 +64,7 @@ class EyebotLLM(EyebotBase):
 
             if self.manual_event.is_set() and not self.safety_event.is_set():
                 #self.logger.info("Manual control! "+ str(self.safety_event.is_set()))
-                self.manual_control()
+                # self.manual_control()
                 self.llm_request_event.clear()
             # TODO: need to comment out this line in the final version
             time.sleep(CONTROL_EVENT_CHECK_FREQUENCY)
@@ -99,3 +101,10 @@ class EyebotLLM(EyebotBase):
         else:
             self.llm_request_event.set()
         self.safety_check()
+
+    def dog_run(self, goal_x, goal_y):
+        self.dog_drive(goal_x, goal_y)
+
+    def setSpeed(self, speed, angspeed):
+        VWTurn(180, 50)
+        # VWSetSpeed(speed, angspeed)

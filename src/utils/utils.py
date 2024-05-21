@@ -7,6 +7,7 @@ from eye import *
 from PIL import Image
 
 
+
 def cam2image(image):
     """
     Convert the QVGA image from the camera to a PIL image.
@@ -40,3 +41,19 @@ def lidar2image(scan: List[int], experiment_time: str, save_path: str):
     fig.savefig(save_path)
     plt.close(fig)
 
+# TODO: 
+def llm_chessboard_path2action_list(llm_path: str) -> List[str]:
+    """
+    llm_path: x0,y0|x1,y1|x2,y2|...
+    """
+    location_pairs = llm_path.split("|")
+
+    x_coords = []
+    y_coords = []
+
+    for pair in location_pairs:
+        x, y = map(int, pair.split(","))
+        x_coords.append(x)
+        y_coords.append(y)
+
+    return [f"move {x},{y}" for x, y in zip(x_coords, y_coords)]
