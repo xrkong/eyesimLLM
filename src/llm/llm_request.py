@@ -1,41 +1,66 @@
 import json
+from tqdm import tqdm
+import httpx
+from src.llm.llama_request import LLAMARequest
+from src.utils.constant import DATA_DIR
 import logging
 import os
-
-import httpx
 from dotenv import find_dotenv, load_dotenv
-from llama_cpp import Llama, LlamaGrammar
 from openai import OpenAI
-from tqdm import tqdm
-
-from src.llm.llama_request import LLAMARequest
-from src.utils.constant import LLM_MODEL_DIR, PROMPT_DIR
+from typing import List, Union, Dict
+from src.utils.utils import save_item_to_csv
 
 _ = load_dotenv(find_dotenv())
 
+
 class LLMRequest:
-    def __init__(self, system_prompt: str, model_name: str='gpt-4o'):
+    def __init__(self, system_prompt: str, task_name: str, model_name: str = 'gpt-4o'):
         self.logger = logging.getLogger(__name__)
         self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         self.model_name = model_name
         self.system_prompt = system_prompt
-
-    def openai_query(self, prompt: str):
+        self.task_name = task_name
+        (DATA_DIR / self.model_name).mkdir(parents=True, exist_ok=True)
+        self.file_path = f'{DATA_DIR}/{self.model_name}/{self.task_name}.csv'
+    
+    def llm_response_record(self, experiment_time: Union[int, float], situation_awareness: str, action_list: List[Dict]):
+        return {
+            "experiment_time": experiment_time,
+            "task_name": self.task_name,  
+            "model_name": self.model_name, 
+            "situation_awareness": situation_awareness,
+            "action_list": action_list
+        }
+    
+    def openai_query(self, text: str, images: Union[List[str], str] = None, experiment_time: Union[int, float] = 0):
         """
         Query OpenAI API for ChatCompletion
         """
         messages = [
             {"role": "system", "content": self.system_prompt},
-            {"role": "user", "content": prompt}
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": str(text)}] + [
+                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image}", "details": "low"}}
+                    for image in images
+                ]
+            }
         ]
+
         try:
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=messages,
-                response_format={"type":"json_object"}
+                response_format={"type": "json_object"}
             )
+
             self.logger.info(f'{self.model_name} response: {response}')
-            return response.choices[0].message.content
+            command = json.loads(response.choices[0].message.content)
+            
+            response_record = self.llm_response_record(experiment_time, command["situation_awareness"], command["action_list"])
+            save_item_to_csv(item=response_record, file_path=self.file_path)
+
+            return command
         except Exception as e:
             print("Unable to generate ChatCompletion response")
             print(f"Exception: {e}")
