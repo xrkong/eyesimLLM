@@ -2,7 +2,7 @@ from src.robot import *
 
 
 class EyebotManual(EyebotBase):
-    def __init__(self, task_name:str="manual"):
+    def __init__(self, task_name: str = "manual"):
         super().__init__(task_name)
         self.safety_event = threading.Event()
         self.manual_event = threading.Event()
@@ -16,11 +16,11 @@ class EyebotManual(EyebotBase):
             if self.safety_event.is_set():
                 self.logger.info("Safety event triggered!")
                 # TODO: Triggering safety methods
-                self.stop()
+                self.update_state(0, 0)
                 self.safety_event.clear()
                 # self.llm_request_event.set()
             if self.manual_event.is_set() and not self.safety_event.is_set():
-                #self.logger.info("Manual control! "+ str(self.safety_event.is_set()))
+                # self.logger.info("Manual control! "+ str(self.safety_event.is_set()))
                 self.manual_control()
             time.sleep(CONTROL_EVENT_CHECK_FREQUENCY)
 

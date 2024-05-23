@@ -1,4 +1,3 @@
-import csv
 import logging
 import threading
 import time
@@ -16,11 +15,11 @@ from src.utils.constant import (
     IMAGE_DIR,
     SAFETY_EVENT_CHECK_FREQUENCY,
 )
-from src.utils.utils import cam2image, lidar2image
+from src.utils.utils import cam2image, lidar2image, encode_image, save_item_to_csv
 
 
 class EyebotBase:
-    def __init__(self, task_name:str):
+    def __init__(self, task_name: str):
 
         """
         Initialize the EyebotBase class
@@ -52,8 +51,6 @@ class EyebotBase:
         self.data_collection_thread = threading.Thread(target=self.data_collection)
         self.lock = threading.Lock()
 
-
-
     def to_dict(self):
         """
         return the robot's state as a dictionary for data collection
@@ -69,18 +66,26 @@ class EyebotBase:
             "safety_event": self.safety_event.is_set(),
         }
 
+    def get_current_state(self):
+        """
+        Get the current state of the robot
+        """
+        state = self.to_dict()
+        img_base64 = encode_image(state["img_path"])
+        lidar_base64 = encode_image(state["lidar_path"])
+        return {
+            "text": {
+                "speed": state["speed"],
+                "angspeed": state["angspeed"],
+            },
+            "images": [img_base64, lidar_base64]
+        }
 
     def move(self, speed, angspeed):
         """
         move the robot with the given speed and angspeed
         """
         self.update_state(speed, angspeed)
-
-    def stop(self):
-        """
-        stop the robot -> set speed and angspeed to 0
-        """
-        self.update_state(0, 0)
 
     def update_state(self, speed, angspeed):
         """
@@ -89,7 +94,6 @@ class EyebotBase:
         self.speed = speed
         self.angspeed = angspeed
         VWSetSpeed(self.speed, self.angspeed)
-
 
     def manual_control(self):
         """
@@ -150,7 +154,7 @@ class EyebotBase:
             degrees.append((direction_to_check, distance_in_direction))
             if distance_in_direction < safe_stopping_distance or distance_in_direction < 200:
                 return True
-        self.logger.info(degrees)
+        # self.logger.info(degrees)
         return False
 
     def safety_check(self):
@@ -164,7 +168,6 @@ class EyebotBase:
             if self.emergency_stop():
                 self.safety_event.set()
             time.sleep(SAFETY_EVENT_CHECK_FREQUENCY)
-
 
     def run(self):
         raise NotImplementedError
@@ -180,14 +183,16 @@ class EyebotBase:
             # save the image
             with self.lock:
                 cam2image(self.img).save(current_state["img_path"])
-                lidar2image(scan=list(self.scan), experiment_time=str(current_state['experiment_time']), save_path=current_state["lidar_path"])
+                lidar2image(scan=list(self.scan), experiment_time=str(current_state['experiment_time']),
+                            save_path=current_state["lidar_path"])
             # save the data
-            with open(self.file_path, mode='a', newline='') as file:
-                writer = csv.DictWriter(file, fieldnames=fieldnames)
-                # Write headers only if the file is empty
-                if file.tell() == 0:
-                    writer.writeheader()
-                writer.writerow(current_state)
+            save_item_to_csv(item=current_state, file_path=self.file_path)
+            # with open(self.file_path, mode='a', newline='') as file:
+            #     writer = csv.DictWriter(file, fieldnames=fieldnames)
+            #     # Write headers only if the file is empty
+            #     if file.tell() == 0:
+            #         writer.writeheader()
+            #     writer.writerow(current_state)
             time.sleep(DATA_COLLECTION_FREQUENCY)
             self.experiment_time += DATA_COLLECTION_FREQUENCY
 
