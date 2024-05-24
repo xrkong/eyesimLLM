@@ -66,11 +66,6 @@ class EyebotBase:
             "safety_event": self.safety_event.is_set(),
         }
 
-    def update_sensors(self):
-        self.img = CAMGet()
-        LCDImage(self.img)
-        self.scan = LIDARGet()
-
     def get_current_state(self):
         """
         Get the current state of the robot
@@ -167,7 +162,9 @@ class EyebotBase:
         check the safety of the robot
         """
         while True:
-            self.update_sensors()
+            self.img = CAMGet()
+            LCDImage(self.img)
+            self.scan = LIDARGet()
             if self.emergency_stop():
                 self.safety_event.set()
             time.sleep(SAFETY_EVENT_CHECK_FREQUENCY)
