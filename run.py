@@ -28,12 +28,12 @@ if __name__ == '__main__':
 - Use `straight` and `turn` to control the robot:
   - `straight` has two parameters:
     - `distance`: 0 < distance < 200 mm (for one action)
-    - `speed`: mm/s (forward > 0, backward < 0)
+    - `speed`: mm/s 
+    - `direction`: forward or backward
   - `turn` has two parameters:
     - `angle`: 0 < angle < 60 degrees (for one action)
     - `speed`: degrees/s
-      - To turn left, set the value > 0
-      - To turn right, set the value < 0
+    - `direction`: left or right
 - `duration`: specifies the action time
 - `explanation`: describes the action.
     """
@@ -48,8 +48,12 @@ Your task is to control the robot to locate and approach a red can in the room, 
     """
 
     schema = {"situation_awareness": "describe the situation",
-              "action_list": [{"action": "straight", "distance": 50, "speed": 10, "explanation": "move forward"},
-                              {"action": "turn", "angle": 50, "speed": 10, "explanation": "turn left"}]}
+              "action_list": [{"action": "straight", "distance": 50, "speed": 10,
+                               "direction": "forward",
+                               "explanation": "move forward"},
+                              {"action": "turn", "angle": 50, "speed": 10,
+                               "direction": "left",
+                               "explanation": "turn left"}]}
     robot = DMEyebotLLM(task_name="discrete_llm_finder", system_prompt=system_prompt(task_description=task_description,
                                                                                      control_description=control_description,
                                                                                      schema=schema))

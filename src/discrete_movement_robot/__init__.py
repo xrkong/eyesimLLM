@@ -63,19 +63,21 @@ class DiscreteMovementEyebot:
             "images": [img_base64, lidar_base64]
         }
 
-    def straight(self, distance: int, speed: int):
+    def straight(self, distance: int, speed: int, direction: str):
         """
         move the robot straight for a given distance
         """
-        VWStraight(distance, speed)
+        factor = 1 if direction == "forward" else -1
+        VWStraight(distance, factor*speed)
         VWWait()
         self.update_state()
 
-    def turn(self, angle: int, speed: int):
+    def turn(self, angle: int, speed: int, direction: str):
         """
         turn the robot for a given angle
         """
-        VWTurn(angle, speed)
+        factor = 1 if direction == "left" else -1
+        VWTurn(factor*angle, speed)
         VWWait()
         self.update_state()
 

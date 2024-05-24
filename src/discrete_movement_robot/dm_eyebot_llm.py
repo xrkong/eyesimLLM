@@ -14,11 +14,13 @@ class DMEyebotLLM(DiscreteMovementEyebot):
         while len(action_list) > 0:
             action = action_list.pop(0)
             if action["action"] == "straight":
-                self.logger.info(f"Executing action {action['action']} {action['distance']} {action['speed']}")
-                self.straight(action["distance"], action["speed"])
+                self.logger.info(f"Executing action {action['action']} {action['distance']} "
+                                 f"{action['speed']} {action['direction']}")
+                self.straight(action["distance"], action["speed"], action['direction'])
             elif action["action"] == "turn":
-                self.logger.info(f"Executing action {action['action']} {action['angle']} {action['speed']}")
-                self.turn(action["angle"], action["speed"])
+                self.logger.info(f"Executing action {action['action']} "
+                                 f"{action['angle']} {action['speed']} {action['direction']}")
+                self.turn(action["angle"], action["speed"], action['direction'])
             self.update_sensors()
             self.step += 1
 
