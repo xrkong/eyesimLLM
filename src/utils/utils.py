@@ -1,12 +1,12 @@
-from typing import List, Union, Dict
+import base64
+import csv
+from typing import Dict, List, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from eye import *
 from PIL import Image
-import base64
-import csv
 
 
 def cam2image(image):

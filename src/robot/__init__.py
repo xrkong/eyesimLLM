@@ -15,7 +15,7 @@ from src.utils.constant import (
     IMAGE_DIR,
     SAFETY_EVENT_CHECK_FREQUENCY,
 )
-from src.utils.utils import cam2image, lidar2image, encode_image, save_item_to_csv
+from src.utils.utils import cam2image, encode_image, lidar2image, save_item_to_csv
 
 
 class EyebotBase:
@@ -187,12 +187,6 @@ class EyebotBase:
                             save_path=current_state["lidar_path"])
             # save the data
             save_item_to_csv(item=current_state, file_path=self.file_path)
-            # with open(self.file_path, mode='a', newline='') as file:
-            #     writer = csv.DictWriter(file, fieldnames=fieldnames)
-            #     # Write headers only if the file is empty
-            #     if file.tell() == 0:
-            #         writer.writeheader()
-            #     writer.writerow(current_state)
             time.sleep(DATA_COLLECTION_FREQUENCY)
             self.experiment_time += DATA_COLLECTION_FREQUENCY
 

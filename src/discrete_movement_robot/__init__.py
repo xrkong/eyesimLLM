@@ -15,7 +15,7 @@ from src.utils.constant import (
     IMAGE_DIR,
     SAFETY_EVENT_CHECK_FREQUENCY,
 )
-from src.utils.utils import cam2image, lidar2image, encode_image, save_item_to_csv
+from src.utils.utils import cam2image, encode_image, lidar2image, save_item_to_csv
 
 
 class DiscreteMovementEyebot:
@@ -30,7 +30,8 @@ class DiscreteMovementEyebot:
         self.phi = 0
         self.step = 0
         (IMAGE_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
-        self.file_path = f'{DATA_DIR}/{self.task_name}.csv'
+        (DATA_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
+        self.file_path = f'{DATA_DIR}/{self.task_name}/robot_state.csv'
 
     def to_dict(self):
         """
@@ -68,7 +69,7 @@ class DiscreteMovementEyebot:
         move the robot straight for a given distance
         """
         factor = 1 if direction == "forward" else -1
-        VWStraight(distance, factor*speed)
+        VWStraight(factor*distance, speed)
         VWWait()
         self.update_state()
 

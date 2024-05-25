@@ -1,13 +1,15 @@
 import json
-from tqdm import tqdm
-import httpx
-from src.llm.llama_request import LLAMARequest
-from src.utils.constant import DATA_DIR
 import logging
 import os
+from typing import Dict, List, Union
+
+import httpx
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
-from typing import List, Union, Dict
+from tqdm import tqdm
+
+from src.llm.llama_request import LLAMARequest
+from src.utils.constant import DATA_DIR
 from src.utils.utils import save_item_to_csv
 
 _ = load_dotenv(find_dotenv())
@@ -21,7 +23,7 @@ class LLMRequest:
         self.system_prompt = system_prompt
         self.task_name = task_name
         (DATA_DIR / self.model_name).mkdir(parents=True, exist_ok=True)
-        self.file_path = f'{DATA_DIR}/{self.model_name}/{self.task_name}.csv'
+        self.file_path = f'{DATA_DIR}/{self.task_name}/llm_reasoning_record.csv'
     
     def llm_response_record(self, experiment_time: Union[int, float], situation_awareness: str, action_list: List[Dict]):
         return {
@@ -53,11 +55,10 @@ class LLMRequest:
                 messages=messages,
                 response_format={"type": "json_object"}
             )
-
-            self.logger.info(f'{self.model_name} response: {response}')
             command = json.loads(response.choices[0].message.content)
-            
-            response_record = self.llm_response_record(experiment_time, command["situation_awareness"], command["action_list"])
+            response_record = self.llm_response_record(experiment_time,
+                                                       command["situation_awareness"],
+                                                       command["action_list"])
             save_item_to_csv(item=response_record, file_path=self.file_path)
 
             return command

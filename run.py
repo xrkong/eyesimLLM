@@ -1,10 +1,10 @@
 import logging
 
+from src.discrete_movement_robot.dm_eyebot_llm import DMEyebotLLM
+from src.llm.prompt import system_prompt
 from src.robot.eyebot_lawnmower import EyebotLawnmower
 from src.robot.eyebot_llm import EyebotLLM
 from src.robot.eyebot_manual import EyebotManual
-from src.llm.prompt import system_prompt
-from src.discrete_movement_robot.dm_eyebot_llm import DMEyebotLLM
 
 logging.basicConfig(level=logging.INFO)
 
@@ -26,35 +26,33 @@ if __name__ == '__main__':
 
     control_description = """
 - Use `straight` and `turn` to control the robot:
-  - `straight` has two parameters:
-    - `distance`: 0 < distance < 200 mm (for one action)
-    - `speed`: mm/s 
+  - `straight` has four parameters:
+    - `distance`: 0 < distance < 400 mm (for one action)
     - `direction`: forward or backward
-  - `turn` has two parameters:
-    - `angle`: 0 < angle < 60 degrees (for one action)
-    - `speed`: degrees/s
+    - `explanation`: describes the action.
+  - `turn` has four parameters:
+    - `angle`: 0 < angle < 90 degrees (for one action)
     - `direction`: left or right
-- `duration`: specifies the action time
-- `explanation`: describes the action.
+    - `explanation`: describes the action.
     """
     task_description = """
-The robot sends its current state, and you send back at least one action. The state includes:
+The robot sends its current state, and you send back a list of actions. The state includes:
 - `position` (x, y, phi)
 - A front camera image showing the front scene
 - A LiDAR image showing the distance to all surrounding objects
 
-Your task is to control the robot to locate and approach a red can in the room, stopping 200mm in front of it. 
-    
+Your task is to control the robot to locate and approach a red can in the room, stopping 200mm in front of it, 
+avoiding obstacles.
     """
 
     schema = {"situation_awareness": "describe the situation",
-              "action_list": [{"action": "straight", "distance": 50, "speed": 10,
+              "action_list": [{"action": "straight", "distance": 50,
                                "direction": "forward",
                                "explanation": "move forward"},
-                              {"action": "turn", "angle": 50, "speed": 10,
+                              {"action": "turn", "angle": 50,
                                "direction": "left",
                                "explanation": "turn left"}]}
     robot = DMEyebotLLM(task_name="discrete_llm_finder", system_prompt=system_prompt(task_description=task_description,
-                                                                                     control_description=control_description,
-                                                                                     schema=schema))
+                                                                                      control_description=control_description,
+                                                                                      schema=schema))
     robot.run()
