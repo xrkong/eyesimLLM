@@ -22,7 +22,6 @@ class LLMRequest:
         self.model_name = model_name
         self.system_prompt = system_prompt
         self.task_name = task_name
-        (DATA_DIR / self.model_name).mkdir(parents=True, exist_ok=True)
         self.file_path = f'{DATA_DIR}/{self.task_name}/llm_reasoning_record.csv'
     
     def llm_response_record(self, experiment_time: Union[int, float], situation_awareness: str, action_list: List[Dict]):

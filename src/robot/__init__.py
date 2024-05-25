@@ -12,7 +12,6 @@ from src.utils.constant import (
     CONTROL_EVENT_CHECK_FREQUENCY,
     DATA_COLLECTION_FREQUENCY,
     DATA_DIR,
-    IMAGE_DIR,
     SAFETY_EVENT_CHECK_FREQUENCY,
 )
 from src.utils.utils import cam2image, encode_image, lidar2image, save_item_to_csv
@@ -46,7 +45,8 @@ class EyebotBase:
         self.experiment_time = 0
         self.logger = logging.getLogger(__name__)
         self.safety_event = threading.Event()
-        (IMAGE_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
+        self.img_dir = DATA_DIR / self.task_name / "images"
+        self.img_dir.mkdir(parents=True, exist_ok=True)
         self.file_path = f'{DATA_DIR}/{self.task_name}.csv'
         self.data_collection_thread = threading.Thread(target=self.data_collection)
         self.lock = threading.Lock()
@@ -55,8 +55,8 @@ class EyebotBase:
         """
         return the robot's state as a dictionary for data collection
         """
-        img_path = f'{IMAGE_DIR}/{self.task_name}/{self.experiment_time}.png'
-        lidar_path = f'{IMAGE_DIR}/{self.task_name}/{self.experiment_time}_lidar.png'
+        img_path = f'{self.img_dir}/{self.experiment_time}.png'
+        lidar_path = f'{self.img_dir}/{self.experiment_time}_lidar.png'
         return {
             "experiment_time": self.experiment_time,
             "speed": self.speed,

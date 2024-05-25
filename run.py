@@ -52,7 +52,7 @@ avoiding obstacles.
                               {"action": "turn", "angle": 50,
                                "direction": "left",
                                "explanation": "turn left"}]}
-    robot = DMEyebotLLM(task_name="discrete_llm_finder", system_prompt=system_prompt(task_description=task_description,
+    robot = DMEyebotLLM(task_name="finder_with_obstacles", system_prompt=system_prompt(task_description=task_description,
                                                                                       control_description=control_description,
                                                                                       schema=schema))
     robot.run()

@@ -12,7 +12,6 @@ from src.utils.constant import (
     CONTROL_EVENT_CHECK_FREQUENCY,
     DATA_COLLECTION_FREQUENCY,
     DATA_DIR,
-    IMAGE_DIR,
     SAFETY_EVENT_CHECK_FREQUENCY,
 )
 from src.utils.utils import cam2image, encode_image, lidar2image, save_item_to_csv
@@ -29,7 +28,8 @@ class DiscreteMovementEyebot:
         self.y = 0
         self.phi = 0
         self.step = 0
-        (IMAGE_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
+        self.img_dir = DATA_DIR / self.task_name / "images"
+        self.img_dir.mkdir(parents=True, exist_ok=True)
         (DATA_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
         self.file_path = f'{DATA_DIR}/{self.task_name}/robot_state.csv'
 
@@ -37,8 +37,8 @@ class DiscreteMovementEyebot:
         """
         return the robot's state as a dictionary for data collection
         """
-        img_path = f'{IMAGE_DIR}/{self.task_name}/{self.step}.png'
-        lidar_path = f'{IMAGE_DIR}/{self.task_name}/{self.step}_lidar.png'
+        img_path = f'{self.img_dir}/{self.step}.png'
+        lidar_path = f'{self.img_dir}/{self.step}_lidar.png'
         return {
             "step": self.step,
             "x": self.x,
