@@ -24,35 +24,5 @@ if __name__ == '__main__':
     #                                                                       schema=schema))
     # robot.run()
 
-    control_description = """
-- Use `straight` and `turn` to control the robot:
-  - `straight` has four parameters:
-    - `distance`: 0 < distance < 400 mm (for one action)
-    - `direction`: forward or backward
-    - `explanation`: describes the action.
-  - `turn` has four parameters:
-    - `angle`: 0 < angle < 90 degrees (for one action)
-    - `direction`: left or right
-    - `explanation`: describes the action.
-    """
-    task_description = """
-The robot sends its current state, and you send back a list of actions. The state includes:
-- `position` (x, y, phi)
-- A front camera image showing the front scene
-- A LiDAR image showing the distance to all surrounding objects
-
-Your task is to control the robot to locate and approach a red can in the room, stopping 200mm in front of it, 
-avoiding obstacles.
-    """
-
-    schema = {"situation_awareness": "describe the situation",
-              "action_list": [{"action": "straight", "distance": 50,
-                               "direction": "forward",
-                               "explanation": "move forward"},
-                              {"action": "turn", "angle": 50,
-                               "direction": "left",
-                               "explanation": "turn left"}]}
-    robot = DMEyebotLLM(task_name="finder_with_obstacles", system_prompt=system_prompt(task_description=task_description,
-                                                                                      control_description=control_description,
-                                                                                      schema=schema))
+    robot = DMEyebotLLM(task_name="finder_with_obstacles_1", model_name='gpt-4o')
     robot.run()

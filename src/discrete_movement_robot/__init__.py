@@ -32,6 +32,7 @@ class DiscreteMovementEyebot:
         self.img_dir.mkdir(parents=True, exist_ok=True)
         (DATA_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
         self.file_path = f'{DATA_DIR}/{self.task_name}/robot_state.csv'
+        self.last_execution_result = {"action": "None", "last_situation": "start of the task", "executed": False, "reason": "start of the task"}
 
     def to_dict(self):
         """
@@ -56,11 +57,12 @@ class DiscreteMovementEyebot:
         img_base64 = encode_image(state["img_path"])
         lidar_base64 = encode_image(state["lidar_path"])
         return {
-            "text": {
+            "position": {
                 "x": state["x"],
                 "y": state["y"],
                 "phi": state["phi"],
             },
+            "last_execution_result": self.last_execution_result,
             "images": [img_base64, lidar_base64]
         }
 

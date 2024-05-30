@@ -2,13 +2,15 @@ from typing import Dict, List, Union
 
 from src.discrete_movement_robot import *
 from src.llm.llm_request import LLMRequest
+from src.llm.prompt import user_text_prompt, system_prompt
 
 
 class DMEyebotLLM(DiscreteMovementEyebot):
-    def __init__(self, task_name: str, system_prompt: str = "", model_name='gpt-4o'):
+    def __init__(self, task_name: str,  model_name='gpt-4o'):
         super().__init__(task_name=task_name)
-        self.llm = LLMRequest(task_name=task_name, system_prompt=system_prompt, model_name=model_name)
+        self.model_name = model_name
         self.llm_action_record_file_path = f'{DATA_DIR}/{self.task_name}/llm_action_record.csv'
+        self.llm = LLMRequest(task_name=self.task_name, model_name=self.model_name)
 
     def action_record_to_dict(self, action: Dict, safe: bool = False):
         key = "distance" if action["action"] == "straight" else "angle"
@@ -20,6 +22,12 @@ class DMEyebotLLM(DiscreteMovementEyebot):
             "explanation": action["explanation"],
             "safe": safe
         }
+
+    def load_historical_trajectory(self, context_window: int = 5):
+        """
+        Load the historical trajectory from the file
+        """
+        pass
 
     def safety_check(self, action: Dict, range_degrees: int = 30):
         """
@@ -38,7 +46,7 @@ class DMEyebotLLM(DiscreteMovementEyebot):
                     return False
         return True
 
-    def execute_action_list(self, action_list: List[Dict]):
+    def execute_action_list(self, situation: str, action_list: List[Dict]):
         """
         execute the list of actions
         """
@@ -46,9 +54,10 @@ class DMEyebotLLM(DiscreteMovementEyebot):
             action = action_list.pop(0)
             if not self.safety_check(action):
                 self.logger.info(f"Action {action['action']} {action['distance']} {action['direction']} is not safe")
+                self.last_execution_result = {"action": action, "last_situation": situation,  "executed": False, "reason": "unsafe action"}
                 save_item_to_csv(item=self.action_record_to_dict(action, safe=False),
                                  file_path=self.llm_action_record_file_path)
-                continue
+                break
             if action["action"] == "straight":
                 self.logger.info(f"Executing action {action['action']} {action['distance']} "
                                  f"{action['direction']}")
@@ -56,6 +65,7 @@ class DMEyebotLLM(DiscreteMovementEyebot):
             elif action["action"] == "turn":
                 self.logger.info(f"Executing action {action['action']} {action['angle']} {action['direction']}")
                 self.turn(action["angle"], action["angle"], action['direction'])
+            self.last_execution_result = {"action": action, "last_situation": situation, "executed": True, "reason": "safe action"}
             save_item_to_csv(item=self.action_record_to_dict(action, safe=True),
                              file_path=self.llm_action_record_file_path)
             self.update_sensors()
@@ -66,8 +76,14 @@ class DMEyebotLLM(DiscreteMovementEyebot):
             self.update_sensors()
             self.data_collection()
             current_state = self.get_current_state()
-            command = self.llm.openai_query(text=current_state['text'], images=current_state['images'], experiment_time=self.step)
+            command = self.llm.openai_query(
+                                            system_prompt=system_prompt,
+                                            text=user_text_prompt(position=current_state['position'],
+                                                                  last_execution_result=
+                                                                  current_state['last_execution_result']),
+                                            images=current_state['images'],
+                                            experiment_time=self.step)
             self.logger.info(command["situation_awareness"])
             self.logger.info(command["action_list"])
-            self.execute_action_list(command["action_list"])
+            self.execute_action_list(command["situation_awareness"], command["action_list"])
 
