@@ -24,5 +24,5 @@ if __name__ == '__main__':
     #                                                                       schema=schema))
     # robot.run()
 
-    robot = DMEyebotLLM(task_name="finder_with_obstacles_1", model_name='gpt-4o')
+    robot = DMEyebotLLM(task_name="finder_obs_4", model_name='gpt-4o')
     robot.run()

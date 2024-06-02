@@ -183,7 +183,7 @@ class EyebotBase:
             # save the image
             with self.lock:
                 cam2image(self.img).save(current_state["img_path"])
-                lidar2image(scan=list(self.scan), experiment_time=str(current_state['experiment_time']),
+                lidar2image(scan=list(self.scan),
                             save_path=current_state["lidar_path"])
             # save the data
             save_item_to_csv(item=current_state, file_path=self.file_path)

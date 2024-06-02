@@ -31,7 +31,7 @@ def lidar2image_lineplot(scan: List[int], experiment_time: str, save_path: str):
     degrees = np.linspace(-180, 179, num=360)
 
     # Create the line plot
-    fig, ax = plt.subplots(figsize=(4, 3))
+    fig, ax = plt.subplots(figsize=(2, 2))
     sns.lineplot(x=degrees, y=scan, ax=ax)
     ax.set_title(f'LiDAR Data Line Plot for Each Degree (-180 to 180) at Time={experiment_time}')
     ax.set_xlabel('Degree')
@@ -43,24 +43,37 @@ def lidar2image_lineplot(scan: List[int], experiment_time: str, save_path: str):
     plt.close(fig)
 
 
-def lidar2image(scan: List[int], experiment_time: str, save_path: str):
+def lidar2image(scan: List[int],  save_path: str):
+    # Shift the scan data so that the 179th element is at 0 degrees
+    shift_index = 179
+    shifted_scan = scan[shift_index:] + scan[:shift_index]
+
     # Use Seaborn's styling
     sns.set(style="whitegrid")
 
     # Create the plot
-    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(4, 3))
+    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(3, 3))
 
     # Convert degrees to radians for the polar plot
     degrees = np.arange(0, 360)
     radians = np.deg2rad(degrees)
-    ax.plot(radians, scan)
+
+    # Normalize the distances to range between 0 and 1 for color mapping
+    normalized_scan = np.array(shifted_scan) / max(shifted_scan)
+
+    # Create a scatter plot with a colormap
+    scatter = ax.scatter(radians, shifted_scan, s=10, c=normalized_scan, cmap='viridis', alpha=0.7)
+
+    # Add a color bar
+    # cbar = plt.colorbar(scatter, ax=ax, orientation='vertical')
+    # cbar.set_label('Normalized Distance')
 
     # Set the labels and title
     ax.set_theta_offset(np.pi / 2)  # Rotate the plot to have 0 degrees at the top
     ax.set_theta_direction(-1)  # Set the direction of increasing angles
 
     # Set the range for the radial (distance) axis
-    ax.set_ylim(0, max(scan))
+    ax.set_ylim(0, max(shifted_scan))
 
     # Customize the background and grid
     ax.set_facecolor('white')  # Set the background color to white
@@ -73,7 +86,6 @@ def lidar2image(scan: List[int], experiment_time: str, save_path: str):
     # Save the plot
     fig.savefig(save_path)
 
-    # Show the plot
     plt.close(fig)
 
 

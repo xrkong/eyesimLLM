@@ -1,89 +1,106 @@
 from typing import Dict, List, Union
 
 from src.discrete_movement_robot import *
+from src.discrete_movement_robot.action import Action
 from src.llm.llm_request import LLMRequest
-from src.llm.prompt import user_text_prompt, system_prompt
+from src.llm.prompt import system_prompt, user_text_prompt
+import numpy as np
 
 
 class DMEyebotLLM(DiscreteMovementEyebot):
-    def __init__(self, task_name: str,  model_name='gpt-4o'):
+    def __init__(self, task_name: str, model_name='gpt-4o'):
         super().__init__(task_name=task_name)
         self.model_name = model_name
         self.llm_action_record_file_path = f'{DATA_DIR}/{self.task_name}/llm_action_record.csv'
         self.llm = LLMRequest(task_name=self.task_name, model_name=self.model_name)
 
-    def action_record_to_dict(self, action: Dict, safe: bool = False):
-        key = "distance" if action["action"] == "straight" else "angle"
-        return {
-            "experiment_time": self.step,
-            "action": action["action"],
-            "distance": action[key],
-            "direction": action["direction"],
-            "explanation": action["explanation"],
-            "safe": safe
-        }
+    @staticmethod
+    def red_detector(img):
+        """
+        Returns the column with the most red pixels in the image.
+        """
+        hsi = IPCol2HSI(img)
 
-    def load_historical_trajectory(self, context_window: int = 5):
-        """
-        Load the historical trajectory from the file
-        """
-        pass
+        hue = np.array(hsi[0]).reshape(QVGA_Y, QVGA_X)
+        red = np.where(hue > ctypes.c_int(20))
 
-    def safety_check(self, action: Dict, range_degrees: int = 30):
-        """
-        check if the action is safe
-        """
-        # for checking the front
-        offset = 179
-        if action["direction"] == "backward":
-            # for checking the back
-            offset = 0
-        if action["action"] == "straight":
-            # Check distances in the range around the current direction
-            for direction_to_check in range(-range_degrees, range_degrees + 1):
-                distance_in_direction = self.scan[offset + direction_to_check]
-                if distance_in_direction - action["distance"] < 100:
-                    return False
-        return True
+        if len(red[0]) == 0:
+            return [False, 0, 0]
 
-    def execute_action_list(self, situation: str, action_list: List[Dict]):
+        for i in range(len(red[0])):
+            LCDPixel(red[1][i], red[0][i], RED)
+
+        red_count = np.bincount(red[1])  # count the number of red pixels in each column
+        # print histogram
+        for i in range(len(red_count)):
+            LCDLine(i, QVGA_Y, i, QVGA_Y - red_count[i], RED)
+
+        # find the column with the most red pixels
+        max_col = np.argmax(red_count)
+        max = red_count[max_col]
+        return [True, max_col, max]
+
+    def execute_action_list(self):
         """
         execute the list of actions
         """
-        while len(action_list) > 0:
-            action = action_list.pop(0)
-            if not self.safety_check(action):
-                self.logger.info(f"Action {action['action']} {action['distance']} {action['direction']} is not safe")
-                self.last_execution_result = {"action": action, "last_situation": situation,  "executed": False, "reason": "unsafe action"}
-                save_item_to_csv(item=self.action_record_to_dict(action, safe=False),
+        for i, action in enumerate(self.last_command):
+            # Updating pos_before of the action object
+            action.pos_before = {"x": self.x, "y": self.y, "phi": self.phi}
+
+            # Initial pos_after is set to the same as pos_before
+            action.pos_after = {"x": self.x, "y": self.y, "phi": self.phi}
+
+            # Check if the action is safe
+            if not action.is_safe(self.scan, range_degrees=10):
+                self.logger.info(f"Action {action.action} {action.distance} {action.direction} is not safe")
+                save_item_to_csv(action.to_dict(experiment_time=self.step),
                                  file_path=self.llm_action_record_file_path)
                 break
-            if action["action"] == "straight":
-                self.logger.info(f"Executing action {action['action']} {action['distance']} "
-                                 f"{action['direction']}")
-                self.straight(action["distance"], action["distance"], action['direction'])
-            elif action["action"] == "turn":
-                self.logger.info(f"Executing action {action['action']} {action['angle']} {action['direction']}")
-                self.turn(action["angle"], action["angle"], action['direction'])
-            self.last_execution_result = {"action": action, "last_situation": situation, "executed": True, "reason": "safe action"}
-            save_item_to_csv(item=self.action_record_to_dict(action, safe=True),
+
+            # Mark action as executed
+            action.executed = True
+            self.logger.info(f"Executing action {action.action} {action.distance} {action.angle} {action.direction}")
+
+            # Execute the action based on its type
+            if action.action == "straight":
+                self.straight(action.distance, action.distance, action.direction)
+            elif action.action == "turn":
+                self.logger.info(f"Executing action {action.action} {action.angle} {action.direction}")
+                self.turn(action.angle, action.angle, action.direction)
+
+            # Update pos_after to reflect the new position after execution
+            action.pos_after = {"x": self.x, "y": self.y, "phi": self.phi}
+
+            # Save the action's details to a CSV file
+            save_item_to_csv(action.to_dict(experiment_time=self.step),
                              file_path=self.llm_action_record_file_path)
+
+            # Update sensors and increment step
             self.update_sensors()
             self.step += 1
 
     def run(self):
-        while KEYRead() != KEY4:
+        max_value = 0
+        while KEYRead() != KEY4 and max_value < 180:
+
             self.update_sensors()
             self.data_collection()
+            [res, max_col, max_value] = self.red_detector(self.img)
             current_state = self.get_current_state()
             command = self.llm.openai_query(
-                                            system_prompt=system_prompt,
-                                            text=user_text_prompt(position=current_state['position'],
-                                                                  last_execution_result=
-                                                                  current_state['last_execution_result']),
-                                            images=current_state['images'],
-                                            experiment_time=self.step)
+                system_prompt=system_prompt,
+                text=user_text_prompt(position=current_state['position'],
+                                      last_command=current_state['last_command']),
+                images=current_state['images'],
+                experiment_time=self.step)
             self.logger.info(command["situation_awareness"])
             self.logger.info(command["action_list"])
-            self.execute_action_list(command["situation_awareness"], command["action_list"])
+            self.last_command = [Action(action=action.get("action"),
+                                        direction=action.get("direction"),
+                                        explanation=action.get("explanation"),
+                                        distance=action.get("distance", 0),
+                                        angle=action.get("angle", 0))
+                                 for action in command["action_list"]]
 
+            self.execute_action_list()

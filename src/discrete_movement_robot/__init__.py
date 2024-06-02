@@ -7,6 +7,7 @@ import pandas as pd
 import pygame
 from eye import *
 from pygame.locals import *
+from src.discrete_movement_robot.action import Action
 
 from src.utils.constant import (
     CONTROL_EVENT_CHECK_FREQUENCY,
@@ -32,9 +33,9 @@ class DiscreteMovementEyebot:
         self.img_dir.mkdir(parents=True, exist_ok=True)
         (DATA_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
         self.file_path = f'{DATA_DIR}/{self.task_name}/robot_state.csv'
-        self.last_execution_result = {"action": "None", "last_situation": "start of the task", "executed": False, "reason": "start of the task"}
+        self.last_command = [Action(action="start")]
 
-    def to_dict(self):
+    def to_dict(self) -> Dict:
         """
         return the robot's state as a dictionary for data collection
         """
@@ -49,20 +50,21 @@ class DiscreteMovementEyebot:
             "lidar_path": lidar_path,
         }
 
-    def get_current_state(self):
+    def get_current_state(self) -> Dict:
         """
         Get the current state of the robot
         """
         state = self.to_dict()
         img_base64 = encode_image(state["img_path"])
         lidar_base64 = encode_image(state["lidar_path"])
+        self.logger.info([action.to_str() for action in self.last_command])
         return {
             "position": {
                 "x": state["x"],
                 "y": state["y"],
                 "phi": state["phi"],
             },
-            "last_execution_result": self.last_execution_result,
+            "last_command": [action.to_str() for action in self.last_command],
             "images": [img_base64, lidar_base64]
         }
 
@@ -105,7 +107,7 @@ class DiscreteMovementEyebot:
         self.logger.info("Data collection started!")
         current_state = self.to_dict()
         cam2image(self.img).save(current_state["img_path"])
-        lidar2image(scan=list(self.scan), experiment_time=str(current_state['step']),
+        lidar2image(scan=list(self.scan),
                     save_path=current_state["lidar_path"])
         save_item_to_csv(item=current_state, file_path=self.file_path)
 

@@ -2,8 +2,10 @@ import json
 import logging
 import os
 from typing import Dict, List, Union
+
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
+
 from src.utils.constant import DATA_DIR
 from src.utils.utils import save_item_to_csv
 
