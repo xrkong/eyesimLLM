@@ -4,6 +4,7 @@ from src.robot import *
 
 SAFE = 200
 
+
 class EyebotFinder(EyebotBase):
     def __init__(self):
         super().__init__(task_name="finder")

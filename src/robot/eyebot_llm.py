@@ -17,7 +17,9 @@ class EyebotLLM(EyebotBase):
         """
         while len(action_list) > 0 and self.llm_control_event.is_set():
             action = action_list.pop(0)
-            self.logger.info(f"Executing action {action['speed']} {action['angspeed']} {action['duration']}")
+            self.logger.info(
+                f"Executing action {action['speed']} {action['angspeed']} {action['duration']}"
+            )
             self.update_state(action["speed"], action["angspeed"])
             time.sleep(action["duration"])
         self.update_state(0, 0)
@@ -28,7 +30,11 @@ class EyebotLLM(EyebotBase):
         control the robot's movement based on the events
         """
 
-        llm = LLMRequest(system_prompt=self.system_prompt, task_name=self.task_name, model_name='gpt-4o')
+        llm = LLMRequest(
+            system_prompt=self.system_prompt,
+            task_name=self.task_name,
+            model_name="gpt-4o",
+        )
 
         while True:
             if self.safety_event.is_set():
@@ -50,7 +56,11 @@ class EyebotLLM(EyebotBase):
                 # 4. send prompt to LLM
                 # TODO: uncomment the following line to use openai API
                 current_state = self.get_current_state()
-                response = llm.openai_query(text=current_state['text'], images=current_state['images'], experiment_time=self.experiment_time)
+                response = llm.openai_query(
+                    text=current_state["text"],
+                    images=current_state["images"],
+                    experiment_time=self.experiment_time,
+                )
                 self.logger.info(response["situation_awareness"])
                 self.logger.info(response["action_list"])
                 # TODO: the following line is used for template testing
@@ -59,7 +69,9 @@ class EyebotLLM(EyebotBase):
                 self.llm_control_event.clear()
                 self.llm_control_event.set()
                 # execute the action list
-                action_execution_thread = threading.Thread(target=self.execute_action_list, args=(response["action_list"],))
+                action_execution_thread = threading.Thread(
+                    target=self.execute_action_list, args=(response["action_list"],)
+                )
                 action_execution_thread.start()
 
             if self.manual_event.is_set() and not self.safety_event.is_set():

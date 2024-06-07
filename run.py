@@ -8,7 +8,7 @@ from src.robot.eyebot_manual import EyebotManual
 
 logging.basicConfig(level=logging.INFO)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # control_description = """Use `speed`, `angspeed`, `duration`, and `explanation` to control the robot. `speed` is
     # linear in mm/s (forward>0, backward<0). `angspeed` is angular in degrees/s (turn left>0,
     # turn right<0). `duration` is the action time, and `explanation` describes the action."""
@@ -24,5 +24,5 @@ if __name__ == '__main__':
     #                                                                       schema=schema))
     # robot.run()
 
-    robot = DMEyebotLLM(task_name="finder_obs_4", model_name='gpt-4o')
+    robot = DMEyebotLLM(task_name="finder_obs_6", model_name="gpt-4o")
     robot.run()

@@ -8,4 +8,3 @@ class EyebotLawnmower:
 
     def run(self):
         S4_Robot().robot_trajectory()
-

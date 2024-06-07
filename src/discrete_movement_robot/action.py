@@ -3,48 +3,50 @@ from typing import Dict
 
 
 class Action:
-    def __init__(self, action: str, direction: str = "", explanation: str = "", distance: int = 0, angle: int = 0):
+    def __init__(
+        self, action: str, direction: str = "", distance: int = 0, angle: int = 0
+    ):
         self.logger = logging.getLogger(__name__)
         self.action = action
         self.direction = direction
-        self.explanation = explanation
         self.distance = distance
         self.angle = angle
         self.safe = True
         self.executed = False
         self.pos_before = {}
         self.pos_after = {}
+        self.estimated_target_pos = ""
 
     def to_str(self) -> str:
-        return (f"Action: {self.action}, "
-                f"Direction: {self.direction}, "
-                f"Explanation: {self.explanation}, "
-                f"Distance: {self.distance}, "
-                f"Angle: {self.angle}),"
-                f"Safety Check Result: {self.safe}, "
-                f"Executed Or Not: {self.executed}"
-                f"Position Before: {self.pos_before}"
-                f"Position After: {self.pos_after}"
-                )
+        return (
+            f"Action: {self.action}, "
+            f"Direction: {self.direction}, "
+            f"Distance: {self.distance}, "
+            f"Angle: {self.angle}),"
+            f"Safety Check Result: {self.safe}, "
+            f"Executed Or Not: {self.executed}"
+            f"Position Before: {self.pos_before}"
+            f"Position After: {self.pos_after}"
+            f"Estimated Target Position: {self.estimated_target_pos}"
+        )
 
     def to_dict(self, experiment_time: int) -> Dict:
         return {
             "experiment_time": experiment_time,
             "action": self.action,
             "direction": self.direction,
-            "explanation": self.explanation,
             "distance": self.distance,
             "angle": self.angle,
             "safe": self.safe,
             "executed": self.executed,
             "pos_before": self.pos_before,
             "pos_after": self.pos_after,
+            "estimated_target_pos": self.estimated_target_pos,
         }
 
     def from_dict(self, action_dict: Dict):
         self.action = action_dict["action"]
         self.direction = action_dict["direction"]
-        self.explanation = action_dict["explanation"]
         self.distance = action_dict["distance"]
         self.angle = action_dict["angle"]
 
@@ -63,10 +65,3 @@ class Action:
                 self.safe = False
                 return False
         return True
-
-    def last_execution_result(self, reason: str):
-        return {
-            "action": self.__str__(),
-            "executed": self.executed,
-            "reason": reason
-        }

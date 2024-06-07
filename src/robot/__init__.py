@@ -47,7 +47,7 @@ class EyebotBase:
         self.safety_event = threading.Event()
         self.img_dir = DATA_DIR / self.task_name / "images"
         self.img_dir.mkdir(parents=True, exist_ok=True)
-        self.file_path = f'{DATA_DIR}/{self.task_name}.csv'
+        self.file_path = f"{DATA_DIR}/{self.task_name}.csv"
         self.data_collection_thread = threading.Thread(target=self.data_collection)
         self.lock = threading.Lock()
 
@@ -55,8 +55,8 @@ class EyebotBase:
         """
         return the robot's state as a dictionary for data collection
         """
-        img_path = f'{self.img_dir}/{self.experiment_time}.png'
-        lidar_path = f'{self.img_dir}/{self.experiment_time}_lidar.png'
+        img_path = f"{self.img_dir}/{self.experiment_time}.png"
+        lidar_path = f"{self.img_dir}/{self.experiment_time}_lidar.png"
         return {
             "experiment_time": self.experiment_time,
             "speed": self.speed,
@@ -78,7 +78,7 @@ class EyebotBase:
                 "speed": state["speed"],
                 "angspeed": state["angspeed"],
             },
-            "images": [img_base64, lidar_base64]
+            "images": [img_base64, lidar_base64],
         }
 
     def move(self, speed, angspeed):
@@ -152,7 +152,10 @@ class EyebotBase:
         for direction_to_check in range(-range_degrees, range_degrees + 1):
             distance_in_direction = self.scan[offset + direction_to_check]
             degrees.append((direction_to_check, distance_in_direction))
-            if distance_in_direction < safe_stopping_distance or distance_in_direction < 200:
+            if (
+                distance_in_direction < safe_stopping_distance
+                or distance_in_direction < 200
+            ):
                 return True
         # self.logger.info(degrees)
         return False
@@ -183,8 +186,7 @@ class EyebotBase:
             # save the image
             with self.lock:
                 cam2image(self.img).save(current_state["img_path"])
-                lidar2image(scan=list(self.scan),
-                            save_path=current_state["lidar_path"])
+                lidar2image(scan=list(self.scan), save_path=current_state["lidar_path"])
             # save the data
             save_item_to_csv(item=current_state, file_path=self.file_path)
             time.sleep(DATA_COLLECTION_FREQUENCY)
@@ -194,4 +196,4 @@ class EyebotBase:
         """
         load the data from the csv file
         """
-        return pd.read_csv(f'{DATA_DIR}/{self.task_name}.csv')
+        return pd.read_csv(f"{DATA_DIR}/{self.task_name}.csv")

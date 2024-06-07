@@ -13,28 +13,36 @@ _ = load_dotenv(find_dotenv())
 
 
 class LLMRequest:
-    def __init__(self, task_name: str, model_name: str = 'gpt-4o'):
+    def __init__(self, task_name: str, model_name: str = "gpt-4o"):
         self.logger = logging.getLogger(__name__)
         self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         self.model_name = model_name
         self.task_name = task_name
-        self.file_path = f'{DATA_DIR}/{self.task_name}/llm_reasoning_record.csv'
+        self.file_path = f"{DATA_DIR}/{self.task_name}/llm_reasoning_record.csv"
 
-    def llm_response_record(self, experiment_time: Union[int, float], situation_awareness: str,
-                            action_list: List[Dict]):
+    def llm_response_record(
+        self,
+        experiment_time: Union[int, float],
+        perception: str,
+        planning: str,
+        control: List[Dict],
+    ):
         return {
             "experiment_time": experiment_time,
             "task_name": self.task_name,
             "model_name": self.model_name,
-            "situation_awareness": situation_awareness,
-            "action_list": action_list
+            "perception": perception,
+            "planning": planning,
+            "control": control,
         }
 
-    def openai_query(self,
-                     system_prompt: str,
-                     text: str,
-                     images: Union[List[str], str] = None,
-                     experiment_time: Union[int, float] = 0):
+    def openai_query(
+        self,
+        system_prompt: str,
+        text: str,
+        images: Union[List[str], str] = None,
+        experiment_time: Union[int, float] = 0,
+    ):
         """
         Query OpenAI API for ChatCompletion
         """
@@ -42,23 +50,33 @@ class LLMRequest:
             {"role": "system", "content": system_prompt},
             {
                 "role": "user",
-                "content": [{"type": "text", "text": str(text)}] + [
-                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image}", "details": "low"}}
+                "content": [{"type": "text", "text": str(text)}]
+                + [
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/png;base64,{image}",
+                            "details": "low",
+                        },
+                    }
                     for image in images
-                ]
-            }
+                ],
+            },
         ]
 
         try:
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=messages,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
             command = json.loads(response.choices[0].message.content)
-            response_record = self.llm_response_record(experiment_time,
-                                                       command["situation_awareness"],
-                                                       command["action_list"])
+            response_record = self.llm_response_record(
+                experiment_time,
+                command["perception"],
+                command["planning"],
+                command["control"],
+            )
             save_item_to_csv(item=response_record, file_path=self.file_path)
 
             return command

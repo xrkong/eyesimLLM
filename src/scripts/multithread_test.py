@@ -20,7 +20,7 @@ def infinite_loop():
         count += 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     thread = threading.Thread(target=infinite_loop)
     thread.start()
     while True:
@@ -32,4 +32,3 @@ if __name__ == '__main__':
         time.sleep(2)
 
     VWSetSpeed(0, 0)
-

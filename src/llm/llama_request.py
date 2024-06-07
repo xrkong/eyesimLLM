@@ -13,15 +13,16 @@ _ = load_dotenv(find_dotenv())
 
 
 class LLAMARequest:
-    def __init__(self,
-                 request_endpoint: str = "custom_llm",
-                 query_interval: int = 0.2,
-                 remote_url: bool = True,
-                 task_type: str = "gpu",
-                 task_name: str = "eyesim",
-                 model_name: str = "Meta-Llama-3-8B-Instruct",
-                 llm_task_type: str = "chat_completion"
-                 ):
+    def __init__(
+        self,
+        request_endpoint: str = "custom_llm",
+        query_interval: int = 0.2,
+        remote_url: bool = True,
+        task_type: str = "gpu",
+        task_name: str = "eyesim",
+        model_name: str = "Meta-Llama-3-8B-Instruct",
+        llm_task_type: str = "chat_completion",
+    ):
         """
         :param request_endpoint: The endpoint to send the request to (custom_llm, llm, llm_batch)
         :param query_interval: The interval to check the task status
@@ -50,7 +51,9 @@ class LLAMARequest:
         for item in MODELS:
             for model in item["models"]:
                 if model_name == model["name"]:
-                    self.logger.info(f"The model type of {model_name} is {item['model_type']}")
+                    self.logger.info(
+                        f"The model type of {model_name} is {item['model_type']}"
+                    )
                     return item["model_type"]
         print(f"String '{model_name}' not found in any dictionary.")
         return None
@@ -64,33 +67,43 @@ class LLAMARequest:
         return "http://localhost:8000/queue_task/"
 
     def set_headers(self, token: str):
-        return {
-            'Authorization': f'Token {token}',
-            'Content-Type': 'application/json'
-        }
+        return {"Authorization": f"Token {token}", "Content-Type": "application/json"}
 
     def queue_task(self, messages: List[Union[dict[str, str]]]) -> Union[None, int]:
         self.logger.info(f"Queuing LLM task for model {self.model_name}")
-        payload = json.dumps({
-            "task_type": self.task_type,
-            "name": self.task_name,
-            "model_name": self.model_name,
-            "llm_task_type": self.llm_task_type,
-            "messages": messages,
-            "response_format": {"type":"json_object", "schema":'{"thought":"string", "reply":"string"}'}
-        })
-        response = requests.request("POST", f"{self.baseurl}{self.request_endpoint}/", headers=self.headers,
-                                    data=payload)
+        payload = json.dumps(
+            {
+                "task_type": self.task_type,
+                "name": self.task_name,
+                "model_name": self.model_name,
+                "llm_task_type": self.llm_task_type,
+                "messages": messages,
+                "response_format": {
+                    "type": "json_object",
+                    "schema": '{"thought":"string", "reply":"string"}',
+                },
+            }
+        )
+        response = requests.request(
+            "POST",
+            f"{self.baseurl}{self.request_endpoint}/",
+            headers=self.headers,
+            data=payload,
+        )
         response_json = json.loads(response.text)
         task_id = response_json.get("task_id")
         return task_id
 
     def task_status(self) -> Dict:
-        response = requests.request("GET", f"{self.baseurl}{self.task_id}/status/", headers=self.headers)
+        response = requests.request(
+            "GET", f"{self.baseurl}{self.task_id}/status/", headers=self.headers
+        )
         response_json = json.loads(response.text)
         return response_json
 
-    def create_chat_completion(self, messages: List[Union[dict[str, str]]]) -> Union[None, Dict]:
+    def create_chat_completion(
+        self, messages: List[Union[dict[str, str]]]
+    ) -> Union[None, Dict]:
         self.task_id = self.queue_task(messages)
         if self.task_id is None:
             self.logger.error(f"Task {self.task_id} queue failed!")

@@ -13,7 +13,7 @@ def cam2image(image):
     """
     Convert the QVGA image from the camera to a PIL image.
     """
-    image = Image.frombytes('RGB', (QVGA_X, QVGA_Y), image)
+    image = Image.frombytes("RGB", (QVGA_X, QVGA_Y), image)
     return image
 
 
@@ -33,9 +33,11 @@ def lidar2image_lineplot(scan: List[int], experiment_time: str, save_path: str):
     # Create the line plot
     fig, ax = plt.subplots(figsize=(2, 2))
     sns.lineplot(x=degrees, y=scan, ax=ax)
-    ax.set_title(f'LiDAR Data Line Plot for Each Degree (-180 to 180) at Time={experiment_time}')
-    ax.set_xlabel('Degree')
-    ax.set_ylabel('Distance')
+    ax.set_title(
+        f"LiDAR Data Line Plot for Each Degree (-180 to 180) at Time={experiment_time}"
+    )
+    ax.set_xlabel("Degree")
+    ax.set_ylabel("Distance")
     # Set x-axis limits and ticks to center 0
     ax.set_xlim(-180, 180)
     ax.set_xticks(np.arange(-180, 181, 30))
@@ -43,7 +45,7 @@ def lidar2image_lineplot(scan: List[int], experiment_time: str, save_path: str):
     plt.close(fig)
 
 
-def lidar2image(scan: List[int],  save_path: str):
+def lidar2image(scan: List[int], save_path: str):
     # Shift the scan data so that the 179th element is at 0 degrees
     shift_index = 179
     shifted_scan = scan[shift_index:] + scan[:shift_index]
@@ -52,7 +54,7 @@ def lidar2image(scan: List[int],  save_path: str):
     sns.set(style="whitegrid")
 
     # Create the plot
-    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(3, 3))
+    fig, ax = plt.subplots(subplot_kw={"projection": "polar"}, figsize=(3, 3))
 
     # Convert degrees to radians for the polar plot
     degrees = np.arange(0, 360)
@@ -62,7 +64,9 @@ def lidar2image(scan: List[int],  save_path: str):
     normalized_scan = np.array(shifted_scan) / max(shifted_scan)
 
     # Create a scatter plot with a colormap
-    scatter = ax.scatter(radians, shifted_scan, s=10, c=normalized_scan, cmap='viridis', alpha=0.7)
+    scatter = ax.scatter(
+        radians, shifted_scan, s=10, c=normalized_scan, cmap="viridis", alpha=0.7
+    )
 
     # Add a color bar
     # cbar = plt.colorbar(scatter, ax=ax, orientation='vertical')
@@ -76,12 +80,14 @@ def lidar2image(scan: List[int],  save_path: str):
     ax.set_ylim(0, max(shifted_scan))
 
     # Customize the background and grid
-    ax.set_facecolor('white')  # Set the background color to white
-    ax.grid(color='gray', linestyle='-', linewidth=0.5, alpha=0.3)  # Lighter grid lines
+    ax.set_facecolor("white")  # Set the background color to white
+    ax.grid(color="gray", linestyle="-", linewidth=0.5, alpha=0.3)  # Lighter grid lines
 
     # Add grid lines and labels
-    ax.set_xticks(np.deg2rad(np.arange(0, 360, 30)))  # Set the degree ticks every 30 degrees
-    ax.set_xticklabels([f'{i}°' for i in range(0, 360, 30)])
+    ax.set_xticks(
+        np.deg2rad(np.arange(0, 360, 30))
+    )  # Set the degree ticks every 30 degrees
+    ax.set_xticklabels([f"{i}°" for i in range(0, 360, 30)])
 
     # Save the plot
     fig.savefig(save_path)
@@ -91,12 +97,12 @@ def lidar2image(scan: List[int],  save_path: str):
 
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
+        return base64.b64encode(image_file.read()).decode("utf-8")
 
 
 def save_item_to_csv(item: Dict, file_path: str):
     fieldnames = item.keys()
-    with open(file_path, 'a') as file:
+    with open(file_path, "a") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         # Write headers only if the file is empty
         if file.tell() == 0:

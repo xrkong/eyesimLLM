@@ -32,15 +32,15 @@ class DiscreteMovementEyebot:
         self.img_dir = DATA_DIR / self.task_name / "images"
         self.img_dir.mkdir(parents=True, exist_ok=True)
         (DATA_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
-        self.file_path = f'{DATA_DIR}/{self.task_name}/robot_state.csv'
-        self.last_command = [Action(action="start")]
+        self.file_path = f"{DATA_DIR}/{self.task_name}/robot_state.csv"
+        self.last_command = None
 
     def to_dict(self) -> Dict:
         """
         return the robot's state as a dictionary for data collection
         """
-        img_path = f'{self.img_dir}/{self.step}.png'
-        lidar_path = f'{self.img_dir}/{self.step}_lidar.png'
+        img_path = f"{self.img_dir}/{self.step}.png"
+        lidar_path = f"{self.img_dir}/{self.step}_lidar.png"
         return {
             "step": self.step,
             "x": self.x,
@@ -57,15 +57,19 @@ class DiscreteMovementEyebot:
         state = self.to_dict()
         img_base64 = encode_image(state["img_path"])
         lidar_base64 = encode_image(state["lidar_path"])
-        self.logger.info([action.to_str() for action in self.last_command])
+        last_command = (
+            None
+            if not self.last_command
+            else [action.to_str() for action in self.last_command]
+        )
         return {
             "position": {
                 "x": state["x"],
                 "y": state["y"],
                 "phi": state["phi"],
             },
-            "last_command": [action.to_str() for action in self.last_command],
-            "images": [img_base64, lidar_base64]
+            "last_command": last_command,
+            "images": [img_base64, lidar_base64],
         }
 
     def straight(self, distance: int, speed: int, direction: str):
@@ -73,7 +77,7 @@ class DiscreteMovementEyebot:
         move the robot straight for a given distance
         """
         factor = 1 if direction == "forward" else -1
-        VWStraight(factor*distance, speed)
+        VWStraight(factor * distance, speed)
         VWWait()
         self.update_state()
 
@@ -82,11 +86,14 @@ class DiscreteMovementEyebot:
         turn the robot for a given angle
         """
         factor = 1 if direction == "left" else -1
-        VWTurn(factor*angle, speed)
+        VWTurn(factor * angle, speed)
         VWWait()
         self.update_state()
 
     def update_sensors(self):
+        """
+        update the robot's camera and lidar
+        """
         self.img = CAMGet()
         LCDImage(self.img)
         self.scan = LIDARGet()
@@ -107,12 +114,11 @@ class DiscreteMovementEyebot:
         self.logger.info("Data collection started!")
         current_state = self.to_dict()
         cam2image(self.img).save(current_state["img_path"])
-        lidar2image(scan=list(self.scan),
-                    save_path=current_state["lidar_path"])
+        lidar2image(scan=list(self.scan), save_path=current_state["lidar_path"])
         save_item_to_csv(item=current_state, file_path=self.file_path)
 
     def load_data_from_csv(self):
         """
         load the data from the csv file
         """
-        return pd.read_csv(f'{DATA_DIR}/{self.task_name}.csv')
+        return pd.read_csv(f"{DATA_DIR}/{self.task_name}.csv")
