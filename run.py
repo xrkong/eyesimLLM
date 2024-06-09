@@ -1,7 +1,6 @@
 import logging
 
 from src.discrete_movement_robot.dm_eyebot_llm import DMEyebotLLM
-from src.llm.prompt import system_prompt
 from src.robot.eyebot_lawnmower import EyebotLawnmower
 from src.robot.eyebot_llm import EyebotLLM
 from src.robot.eyebot_manual import EyebotManual
@@ -24,5 +23,5 @@ if __name__ == "__main__":
     #                                                                       schema=schema))
     # robot.run()
 
-    robot = DMEyebotLLM(task_name="finder_obs_6", model_name="gpt-4o")
+    robot = DMEyebotLLM(task_name="finder_crate", model_name="gpt-4o")
     robot.run()

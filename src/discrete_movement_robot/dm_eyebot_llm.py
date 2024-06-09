@@ -3,7 +3,7 @@ from typing import Dict, List, Union
 from src.discrete_movement_robot import *
 from src.discrete_movement_robot.action import Action
 from src.llm.llm_request import LLMRequest
-from src.llm.prompt import system_prompt, user_text_prompt
+from src.llm.prompt import system_prompt_text, user_prompt_text
 import numpy as np
 
 
@@ -98,8 +98,8 @@ class DMEyebotLLM(DiscreteMovementEyebot):
             [res, max_col, max_value] = self.red_detector(self.img)
             current_state = self.get_current_state()
             command = self.llm.openai_query(
-                system_prompt=system_prompt,
-                text=user_text_prompt(
+                system_prompt=system_prompt_text,
+                text=user_prompt_text(
                     position=current_state["position"],
                     last_command=current_state["last_command"],
                 ),

@@ -15,7 +15,6 @@ class Action:
         self.executed = False
         self.pos_before = {}
         self.pos_after = {}
-        self.estimated_target_pos = ""
 
     def to_str(self) -> str:
         return (
@@ -27,7 +26,6 @@ class Action:
             f"Executed Or Not: {self.executed}"
             f"Position Before: {self.pos_before}"
             f"Position After: {self.pos_after}"
-            f"Estimated Target Position: {self.estimated_target_pos}"
         )
 
     def to_dict(self, experiment_time: int) -> Dict:
@@ -41,7 +39,6 @@ class Action:
             "executed": self.executed,
             "pos_before": self.pos_before,
             "pos_after": self.pos_after,
-            "estimated_target_pos": self.estimated_target_pos,
         }
 
     def from_dict(self, action_dict: Dict):
