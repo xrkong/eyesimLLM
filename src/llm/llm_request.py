@@ -42,6 +42,8 @@ class LLMRequest:
         text: str,
         images: Union[List[str], str] = None,
         experiment_time: Union[int, float] = 0,
+        use_tool: bool = False,
+        tools: List[Dict] = None,
     ):
         """
         Query OpenAI API for ChatCompletion
@@ -65,12 +67,29 @@ class LLMRequest:
         ]
 
         try:
-            response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=messages,
-                response_format={"type": "json_object"},
-            )
-            command = json.loads(response.choices[0].message.content)
+            if not use_tool:
+                response = self.client.chat.completions.create(
+                    model=self.model_name,
+                    messages=messages,
+                    response_format={"type": "json_object"},
+                )
+                command = json.loads(response.choices[0].message.content)
+            else:
+                response = self.client.chat.completions.create(
+                    model=self.model_name,
+                    messages=messages,
+                    tools=tools,
+                    tool_choice="auto",
+                    response_format={"type": "json_object"},
+                )
+                command = json.loads(response.choices[0].message.content)
+                response_message = response.choices[0].message
+                tool_calls = response_message.tool_calls
+                for tool_call in tool_calls:
+                    if tool_call.function.name == "control":
+                        # todo: add control signal to command
+                        pass
+
             response_record = self.llm_response_record(
                 experiment_time,
                 command["perception"],
