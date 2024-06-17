@@ -2,21 +2,24 @@ from typing import Dict, List
 
 
 def user_prompt_text(
-    position: Dict,
-    last_command: str,
-    user_query: str = None,
-    experience_states: List[Dict] = None,
+
+        position: Dict,
+        last_command: str,
+        task: str = None,
+        user_query: str = None,
+        experience_states: List[Dict] = None,
 ):
     """
     Generate a user prompt for the robot control agent.
     :param position: The position data.
     :param last_command: The execution result of last command.
+    :param task: The task description.
     :param user_query: The user query. TBD
     :param experience_states: The experience states. TBD
     """
-
-    task = """Control the robot to locate and approach a crate in the room, stopping 200mm in front of it, 
-    avoiding obstacles."""
+    if not task:
+        task = """Control the robot to locate and approach a crate in the room, stopping 200mm in front of it, 
+        avoiding obstacles."""
 
     control_method = """
                     - `straight`:
@@ -29,9 +32,9 @@ def user_prompt_text(
 
     response_schema = {
         "perception": "Analyse the position, the camera image, "
-        "and LiDAR map, and the last command in plaintext.",
+                      "and LiDAR map, and the last command in plaintext.",
         "planning": "A plan based on the perception in plaintext. The plan need to include control "
-        "signals with justifications. At most two control signals.",
+                    "signals with justifications. At most two control signals.",
         "control": [{"action": "straight", "distance": 50, "direction": "forward"}],
     }
 

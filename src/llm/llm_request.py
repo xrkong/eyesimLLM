@@ -36,18 +36,10 @@ class LLMRequest:
             "control": control,
         }
 
-    def openai_query(
-        self,
-        system_prompt: str,
-        text: str,
-        images: Union[List[str], str] = None,
-        experiment_time: Union[int, float] = 0,
-        use_tool: bool = False,
-        tools: List[Dict] = None,
+    @staticmethod
+    def construct_messages(
+        system_prompt: str, text: str, images: Union[List[str], str] = None
     ):
-        """
-        Query OpenAI API for ChatCompletion
-        """
         messages = [
             {"role": "system", "content": system_prompt},
             {
@@ -65,40 +57,58 @@ class LLMRequest:
                 ],
             },
         ]
+        return messages
+
+    def openai_query(
+        self,
+        system_prompt: str,
+        text: str,
+        images: Union[List[str], str] = None,
+    ):
+        """
+        Query OpenAI API for ChatCompletion
+        """
+        messages = self.construct_messages(system_prompt, text, images)
 
         try:
-            if not use_tool:
-                response = self.client.chat.completions.create(
-                    model=self.model_name,
-                    messages=messages,
-                    response_format={"type": "json_object"},
-                )
-                command = json.loads(response.choices[0].message.content)
-            else:
-                response = self.client.chat.completions.create(
-                    model=self.model_name,
-                    messages=messages,
-                    tools=tools,
-                    tool_choice="auto",
-                    response_format={"type": "json_object"},
-                )
-                command = json.loads(response.choices[0].message.content)
-                response_message = response.choices[0].message
-                tool_calls = response_message.tool_calls
-                for tool_call in tool_calls:
-                    if tool_call.function.name == "control":
-                        # todo: add control signal to command
-                        pass
 
-            response_record = self.llm_response_record(
-                experiment_time,
-                command["perception"],
-                command["planning"],
-                command["control"],
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=messages,
+                response_format={"type": "json_object"},
             )
-            save_item_to_csv(item=response_record, file_path=self.file_path)
+            content = json.loads(response.choices[0].message.content)
+            return content
+        except Exception as e:
+            print("Unable to generate ChatCompletion response")
+            print(f"Exception: {e}")
+            return e
 
-            return command
+    def openai_query_function_call(
+        self,
+        system_prompt: str,
+        text: str,
+        tools: List[Dict],
+        images: Union[List[str], str] = None,
+    ):
+        """
+        Query OpenAI API for ChatCompletion
+        """
+
+        messages = self.construct_messages(system_prompt, text, images)
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=messages,
+                tools=tools,
+                tool_choice="auto",
+                response_format={"type": "json_object"},
+            )
+            content = json.loads(response.choices[0].message.content)
+            response_message = response.choices[0].message
+            tool_calls = response_message.tool_calls
+
+            return content, tool_calls
         except Exception as e:
             print("Unable to generate ChatCompletion response")
             print(f"Exception: {e}")

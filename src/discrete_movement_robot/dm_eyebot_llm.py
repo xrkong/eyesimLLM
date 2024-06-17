@@ -1,9 +1,10 @@
 from typing import Dict, List, Union
-
+import json
 from src.discrete_movement_robot import *
 from src.discrete_movement_robot.action import Action
 from src.llm.llm_request import LLMRequest
 from src.llm.prompt import system_prompt_text, user_prompt_text
+from src.llm.prompt_tools import tools, system_prompt_tools, user_prompt_tools
 import numpy as np
 
 
@@ -46,42 +47,42 @@ class DMEyebotLLM(DiscreteMovementEyebot):
         """
         execute the list of actions
         """
-        for i, action in enumerate(self.last_command):
+        for i, act in enumerate(self.last_command):
             # Updating pos_before of the action object
-            action.pos_before = {"x": self.x, "y": self.y, "phi": self.phi}
+            act.pos_before = {"x": self.x, "y": self.y, "phi": self.phi}
 
             # Initial pos_after is set to the same as pos_before
-            action.pos_after = {"x": self.x, "y": self.y, "phi": self.phi}
+            act.pos_after = {"x": self.x, "y": self.y, "phi": self.phi}
 
             # Check if the action is safe
-            if not action.is_safe(self.scan, range_degrees=10):
+            if not act.is_safe(self.scan, range_degrees=10):
                 self.logger.info(
-                    f"Action {action.action} distance={action.distance} direction={action.direction} is not safe"
+                    f"Action {act.action} distance={act.distance} direction={act.direction} is not safe"
                 )
                 save_item_to_csv(
-                    action.to_dict(experiment_time=self.step),
+                    act.to_dict(experiment_time=self.step),
                     file_path=self.llm_action_record_file_path,
                 )
                 break
 
             # Mark action as executed
-            action.executed = True
+            act.executed = True
             self.logger.info(
-                f"Executing action {action.action} distance={action.distance} angle={action.angle} direction={action.direction}"
+                f"Executing action {act.action} distance={act.distance} angle={act.angle} direction={act.direction}"
             )
 
             # Execute the action based on its type
-            if action.action == "straight":
-                self.straight(action.distance, action.distance, action.direction)
-            elif action.action == "turn":
-                self.turn(action.angle, action.angle, action.direction)
+            if act.action == "straight":
+                self.straight(act.distance, act.distance, act.direction)
+            elif act.action == "turn":
+                self.turn(act.angle, act.angle, act.direction)
 
             # Update pos_after to reflect the new position after execution
-            action.pos_after = {"x": self.x, "y": self.y, "phi": self.phi}
+            act.pos_after = {"x": self.x, "y": self.y, "phi": self.phi}
 
             # Save the action's details to a CSV file
             save_item_to_csv(
-                action.to_dict(experiment_time=self.step),
+                act.to_dict(experiment_time=self.step),
                 file_path=self.llm_action_record_file_path,
             )
 
@@ -92,23 +93,33 @@ class DMEyebotLLM(DiscreteMovementEyebot):
     def run(self):
         max_value = 0
         while KEYRead() != KEY4 and max_value < 180:
-
+            task = input("Enter the task: ")
             self.update_sensors()
             self.data_collection()
             [res, max_col, max_value] = self.red_detector(self.img)
             current_state = self.get_current_state()
-            command = self.llm.openai_query(
+
+            content = self.llm.openai_query(
                 system_prompt=system_prompt_text,
                 text=user_prompt_text(
+                    task=task,
                     position=current_state["position"],
                     last_command=current_state["last_command"],
                 ),
-                images=current_state["images"],
-                experiment_time=self.step,
+                images=current_state["images"]
             )
-            self.logger.info(command["perception"])
-            self.logger.info(command["planning"])
-            self.logger.info(command["control"])
+            response_record = self.llm.llm_response_record(
+                self.step,
+                content["perception"],
+                content["planning"],
+                content["control"],
+            )
+            save_item_to_csv(item=response_record, file_path=self.file_path)
+
+            self.logger.info(content["perception"])
+            self.logger.info(content["planning"])
+            self.logger.info(content["control"])
+
             self.last_command = [
                 Action(
                     action=a.get("action"),
@@ -116,7 +127,47 @@ class DMEyebotLLM(DiscreteMovementEyebot):
                     distance=a.get("distance", 0),
                     angle=a.get("angle", 0),
                 )
-                for a in command["control"]
+                for a in content["control"]
             ]
 
             self.execute_action_list()
+
+            # content, tool_calls = self.llm.openai_query_function_call(
+            #     system_prompt=system_prompt_tools,
+            #     text=user_prompt_tools(
+            #         position=current_state["position"],
+            #         last_command=current_state["last_command"],
+            #     ),
+            #     images=current_state["images"],
+            #     tools=tools,
+            # )
+            # control = [
+            #     {
+            #         'action': a.function.name,
+            #         'direction': json.loads(a.function.arguments).get("direction"),
+            #         'distance': json.loads(a.function.arguments).get("distance", 0),
+            #         'angle': json.loads(a.function.arguments).get("angle", 0),
+            #     }
+            #     for a in tool_calls
+            # ]
+            #
+            # response_record = self.llm.llm_response_record(
+            #     self.step, content["perception"], content["planning"], control
+            # )
+            # save_item_to_csv(item=response_record, file_path=self.file_path)
+            #
+            # self.logger.info(content["perception"])
+            # self.logger.info(content["planning"])
+            # self.logger.info(control)
+            #
+            # self.last_command = [
+            #     Action(
+            #         action=a.get("action"),
+            #         direction=a.get("direction"),
+            #         distance=a.get("distance", 0),
+            #         angle=a.get("angle", 0),
+            #     )
+            #     for a in control
+            # ]
+            #
+            # self.execute_action_list()

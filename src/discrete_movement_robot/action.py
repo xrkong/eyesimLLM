@@ -62,3 +62,4 @@ class Action:
                 self.safe = False
                 return False
         return True
+
