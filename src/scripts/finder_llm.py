@@ -10,10 +10,12 @@ from utils.utils import red_detector, save_predicted_result
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = argparse.ArgumentParser()
     args.add_argument("--query_type", type=str, required=False, default="llama")
-    args.add_argument("--model_name", type=str, required=False, default="Meta-Llama-3-8B-Instruct")
+    args.add_argument(
+        "--model_name", type=str, required=False, default="Meta-Llama-3-8B-Instruct"
+    )
     args = args.parse_args()
 
     img = []
@@ -32,7 +34,9 @@ if __name__ == '__main__':
         dist = PSDGet(1)
         [res, max_col, max_value] = red_detector(img)
         status = f"dist={dist}, res={res}, max_col={max_col}"
-        function_name, arguments=req.query(query_type=args.query_type, user=status, model_name=args.model_name)
+        function_name, arguments = req.query(
+            query_type=args.query_type, user=status, model_name=args.model_name
+        )
         # save_predicted_result(res, max_col, dist, function_name, arguments, args.model_name)
         if function_name == "VWTurn":
             VWTurn(arguments["angle"], arguments["ang_speed"])
