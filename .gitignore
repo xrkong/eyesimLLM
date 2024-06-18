@@ -172,3 +172,5 @@ database/import/*
 database/logs/*
 
 database/plugins/*
+
+demo/*
