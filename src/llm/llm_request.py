@@ -37,7 +37,7 @@ class LLMRequest:
         }
 
     @staticmethod
-    def construct_messages(
+    def construct_image_messages(
         system_prompt: str, text: str, images: Union[List[str], str] = None
     ):
         messages = [
@@ -58,17 +58,33 @@ class LLMRequest:
             },
         ]
         return messages
+    
+    @staticmethod
+    def construct_safety_agent(
+        system_prompt: str, text: str
+    ):
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": str(text)}]
+            },
+        ]
+        return messages
 
     def openai_query(
         self,
         system_prompt: str,
         text: str,
         images: Union[List[str], str] = None,
+        model_name: str = None,
     ):
         """
         Query OpenAI API for ChatCompletion
         """
-        messages = self.construct_messages(system_prompt, text, images)
+        messages = self.construct_image_messages(system_prompt, text, images)
+        if model_name is None:
+            model_name = self.model_name
 
         try:
 
@@ -95,7 +111,7 @@ class LLMRequest:
         Query OpenAI API for ChatCompletion
         """
 
-        messages = self.construct_messages(system_prompt, text, images)
+        messages = self.construct_image_messages(system_prompt, text, images)
         try:
             response = self.client.chat.completions.create(
                 model=self.model_name,
@@ -111,5 +127,30 @@ class LLMRequest:
             return content, tool_calls
         except Exception as e:
             print("Unable to generate ChatCompletion response")
+            print(f"Exception: {e}")
+            return e
+        
+    def is_legal_input(self, input: str):
+        """
+        Check if the input has illegal characters using a prompted agent. 
+        """
+        system_prompt = "You are a safety agent. Check if the input is legal. Only reply TRUE or FALSE."
+        messages = self.construct_safety_agent(system_prompt, text=input)
+        try:
+
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=messages,
+            )
+            content = response.choices[0].message.content
+            # if the response is YES, then the input is legal.
+            if content["choices"][0]["message"]["content"]["text"] == "TRUE":
+                print("The input is legal.")
+                return True
+            else:
+                print("The input is illegal.")
+                return False
+        except Exception as e:
+            print("Safety agent is unable to generate ChatCompletion response")
             print(f"Exception: {e}")
             return e

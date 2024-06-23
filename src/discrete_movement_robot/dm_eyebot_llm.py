@@ -94,11 +94,18 @@ class DMEyebotLLM(DiscreteMovementEyebot):
         max_value = 0
         while KEYRead() != KEY4 and max_value < 180:
             task = input("Enter the task: ")
+            #BUG the task should input once, not every round. 
+
+            # defense user attack. Check the input prompt is legal or not. If not DO nothing.
+            if not self.llm.is_legal_input(task):
+                continue #TODO add the defense mechanism to the LLM
+
             self.update_sensors()
             self.data_collection()
-            [res, max_col, max_value] = self.red_detector(self.img)
+            [res, max_col, max_value] = self.red_detector(self.img) # TODO red detector will be called by the LLM
             current_state = self.get_current_state()
 
+            # TODO use AutoGen to filter malicious commands
             content = self.llm.openai_query(
                 system_prompt=system_prompt_text,
                 text=user_prompt_text(
@@ -108,6 +115,10 @@ class DMEyebotLLM(DiscreteMovementEyebot):
                 ),
                 images=current_state["images"]
             )
+            
+            # LLM controller defense
+
+            # BUG if the content is not legal, the process will throw an exception here.
             response_record = self.llm.llm_response_record(
                 self.step,
                 content["perception"],
