@@ -116,7 +116,8 @@ class DMEyebotLLM(DiscreteMovementEyebot):
                 images=current_state["images"]
             )
             
-            # LLM controller defense
+            # check control command safety
+
 
             # BUG if the content is not legal, the process will throw an exception here.
             response_record = self.llm.llm_response_record(
