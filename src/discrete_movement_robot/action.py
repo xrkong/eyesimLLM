@@ -22,15 +22,14 @@ class Action:
             f"Direction: {self.direction}, "
             f"Distance: {self.distance}, "
             f"Angle: {self.angle}),"
-            f"Safety Check Result: {self.safe}, "
-            f"Executed Or Not: {self.executed}"
-            f"Position Before: {self.pos_before}"
-            f"Position After: {self.pos_after}"
+            f"Safety Check Result: {self.safe},"
+            # f"Position Before: {self.pos_before}"
+            # f"Position After: {self.pos_after}"
         )
 
-    def to_dict(self, experiment_time: int) -> Dict:
+    def to_dict(self, step: int) -> Dict:
         return {
-            "experiment_time": experiment_time,
+            "step": step,
             "action": self.action,
             "direction": self.direction,
             "distance": self.distance,

@@ -9,13 +9,14 @@ import numpy as np
 
 
 class DMEyebotLLM(DiscreteMovementEyebot):
-    def __init__(self, task_name: str, model_name="gpt-4o"):
+    def __init__(self, task_name: str, model_name="gpt-4o", human_instruction=""):
         super().__init__(task_name=task_name)
         self.model_name = model_name
         self.llm_action_record_file_path = (
             f"{DATA_DIR}/{self.task_name}/llm_action_record.csv"
         )
         self.llm = LLMRequest(task_name=self.task_name, model_name=self.model_name)
+        self.human_instruction = human_instruction
 
     @staticmethod
     def red_detector(img):
@@ -43,28 +44,24 @@ class DMEyebotLLM(DiscreteMovementEyebot):
         max = red_count[max_col]
         return [True, max_col, max]
 
+    def validate_action_list(self):
+        flag = True
+        for i, act in enumerate(self.last_command):
+            if not act.is_safe(self.scan, range_degrees=10):
+                # Updating pos_before of the action object
+                act.pos_before = {"x": self.x, "y": self.y, "phi": self.phi}
+                # Initial pos_after is set to the same as pos_before
+                act.pos_after = {"x": self.x, "y": self.y, "phi": self.phi}
+                self.logger.info(f"Action {act.action} distance={act.distance} direction={act.direction} is not safe")
+                save_item_to_csv(act.to_dict(step=self.step), file_path=self.llm_action_record_file_path)
+                flag = False
+        return flag
+
     def execute_action_list(self):
         """
         execute the list of actions
         """
         for i, act in enumerate(self.last_command):
-            # Updating pos_before of the action object
-            act.pos_before = {"x": self.x, "y": self.y, "phi": self.phi}
-
-            # Initial pos_after is set to the same as pos_before
-            act.pos_after = {"x": self.x, "y": self.y, "phi": self.phi}
-
-            # Check if the action is safe
-            if not act.is_safe(self.scan, range_degrees=10):
-                self.logger.info(
-                    f"Action {act.action} distance={act.distance} direction={act.direction} is not safe"
-                )
-                save_item_to_csv(
-                    act.to_dict(experiment_time=self.step),
-                    file_path=self.llm_action_record_file_path,
-                )
-                break
-
             # Mark action as executed
             act.executed = True
             self.logger.info(
@@ -82,7 +79,7 @@ class DMEyebotLLM(DiscreteMovementEyebot):
 
             # Save the action's details to a CSV file
             save_item_to_csv(
-                act.to_dict(experiment_time=self.step),
+                act.to_dict(step=self.step),
                 file_path=self.llm_action_record_file_path,
             )
 
@@ -90,95 +87,60 @@ class DMEyebotLLM(DiscreteMovementEyebot):
             self.update_sensors()
             self.step += 1
 
-    def run(self):
+    def run(self, security: bool = False):
         max_value = 0
-        while KEYRead() != KEY4 and max_value < 180:
-            task = input("Enter the task: ")
-            #BUG the task should input once, not every round. 
-
-            # defense user attack. Check the input prompt is legal or not. If not DO nothing.
-            if not self.llm.is_legal_input(task):
-                continue #TODO add the defense mechanism to the LLM
-
+        # human_instruction = input("Enter the instruction: ")
+        max_step = 25
+        while KEYRead() != KEY4 and max_value < 60 and self.step < max_step:
+            self.logger.info("max value:"+str(max_value))
             self.update_sensors()
             self.data_collection()
-            [res, max_col, max_value] = self.red_detector(self.img) # TODO red detector will be called by the LLM
+            [res, max_col, max_value] = self.red_detector(self.img)
             current_state = self.get_current_state()
 
-            # TODO use AutoGen to filter malicious commands
-            content = self.llm.openai_query(
-                system_prompt=system_prompt_text,
-                text=user_prompt_text(
-                    task=task,
-                    position=current_state["position"],
-                    last_command=current_state["last_command"],
-                ),
-                images=current_state["images"]
-            )
-            
-            # LLM controller defense
-
-            # BUG if the content is not legal, the process will throw an exception here.
-            response_record = self.llm.llm_response_record(
-                self.step,
-                content["perception"],
-                content["planning"],
-                content["control"],
-            )
-            save_item_to_csv(item=response_record, file_path=self.file_path)
-
-            self.logger.info(content["perception"])
-            self.logger.info(content["planning"])
-            self.logger.info(content["control"])
-
-            self.last_command = [
-                Action(
-                    action=a.get("action"),
-                    direction=a.get("direction"),
-                    distance=a.get("distance", 0),
-                    angle=a.get("angle", 0),
+            is_executable = False
+            failure_threshold = 1
+            if security:
+                failure_threshold = 3
+            while not is_executable and failure_threshold > 0:
+                content, usage = self.llm.openai_query(
+                    system_prompt=system_prompt_text(security=security),
+                    text=user_prompt_text(
+                        human_instruction=self.human_instruction,
+                        last_command=current_state["last_command"],
+                        security=security,
+                    ),
+                    images=current_state["images"]
                 )
-                for a in content["control"]
-            ]
+                response_record = self.llm.llm_response_record(
+                    self.step,
+                    content["perception"],
+                    content["planning"],
+                    content["control"],
+                    usage.completion_tokens,
+                    usage.prompt_tokens,
+                    usage.total_tokens,
+                )
+                save_item_to_csv(item=response_record, file_path=self.llm.file_path)
 
-            self.execute_action_list()
+                self.logger.info(content["perception"])
+                self.logger.info(content["planning"])
+                self.logger.info(content["control"])
 
-            # content, tool_calls = self.llm.openai_query_function_call(
-            #     system_prompt=system_prompt_tools,
-            #     text=user_prompt_tools(
-            #         position=current_state["position"],
-            #         last_command=current_state["last_command"],
-            #     ),
-            #     images=current_state["images"],
-            #     tools=tools,
-            # )
-            # control = [
-            #     {
-            #         'action': a.function.name,
-            #         'direction': json.loads(a.function.arguments).get("direction"),
-            #         'distance': json.loads(a.function.arguments).get("distance", 0),
-            #         'angle': json.loads(a.function.arguments).get("angle", 0),
-            #     }
-            #     for a in tool_calls
-            # ]
-            #
-            # response_record = self.llm.llm_response_record(
-            #     self.step, content["perception"], content["planning"], control
-            # )
-            # save_item_to_csv(item=response_record, file_path=self.file_path)
-            #
-            # self.logger.info(content["perception"])
-            # self.logger.info(content["planning"])
-            # self.logger.info(control)
-            #
-            # self.last_command = [
-            #     Action(
-            #         action=a.get("action"),
-            #         direction=a.get("direction"),
-            #         distance=a.get("distance", 0),
-            #         angle=a.get("angle", 0),
-            #     )
-            #     for a in control
-            # ]
-            #
-            # self.execute_action_list()
+                self.last_command = [
+                    Action(
+                        action=a.get("action"),
+                        direction=a.get("direction"),
+                        distance=a.get("distance", 0),
+                        angle=a.get("angle", 0),
+                    )
+                    for a in content["control"]
+                ]
+
+                is_executable = self.validate_action_list()
+                failure_threshold -= 1
+            if is_executable:
+                self.execute_action_list()
+            else:
+                self.logger.info("Mission failed")
+                return

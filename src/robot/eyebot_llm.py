@@ -31,7 +31,6 @@ class EyebotLLM(EyebotBase):
         """
 
         llm = LLMRequest(
-            system_prompt=self.system_prompt,
             task_name=self.task_name,
             model_name="gpt-4o",
         )
@@ -59,7 +58,6 @@ class EyebotLLM(EyebotBase):
                 response = llm.openai_query(
                     text=current_state["text"],
                     images=current_state["images"],
-                    experiment_time=self.experiment_time,
                 )
                 self.logger.info(response["situation_awareness"])
                 self.logger.info(response["action_list"])

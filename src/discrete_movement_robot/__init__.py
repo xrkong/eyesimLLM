@@ -28,12 +28,12 @@ class DiscreteMovementEyebot:
         self.x = 0
         self.y = 0
         self.phi = 0
-        self.step = 0
+        self.step = 1
         self.img_dir = DATA_DIR / self.task_name / "images"
         self.img_dir.mkdir(parents=True, exist_ok=True)
         (DATA_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
         self.file_path = f"{DATA_DIR}/{self.task_name}/robot_state.csv"
-        self.last_command = None
+        self.last_command = ""
 
     def to_dict(self) -> Dict:
         """
@@ -50,13 +50,16 @@ class DiscreteMovementEyebot:
             "lidar_path": lidar_path,
         }
 
-    def get_current_state(self) -> Dict:
+    def get_current_state(self, camera=True) -> Dict:
         """
         Get the current state of the robot
         """
         state = self.to_dict()
-        img_base64 = encode_image(state["img_path"])
         lidar_base64 = encode_image(state["lidar_path"])
+        imgs = [lidar_base64]
+        if camera:
+            img_base64 = encode_image(state["img_path"])
+            imgs = [img_base64, lidar_base64]
         last_command = (
             None
             if not self.last_command
@@ -69,7 +72,7 @@ class DiscreteMovementEyebot:
                 "phi": state["phi"],
             },
             "last_command": last_command,
-            "images": [img_base64, lidar_base64],
+            "images": imgs,
         }
 
     def straight(self, distance: int, speed: int, direction: str):
@@ -104,7 +107,7 @@ class DiscreteMovementEyebot:
         """
         self.x, self.y, self.phi = VWGetPosition()
 
-    def run(self):
+    def run(self, security: bool = False):
         raise NotImplementedError
 
     def data_collection(self):

@@ -22,18 +22,25 @@ class LLMRequest:
 
     def llm_response_record(
         self,
-        experiment_time: Union[int, float],
+        step: int,
         perception: str,
         planning: str,
         control: List[Dict],
+        completion_tokens: int,
+        prompt_tokens: int,
+        total_tokens=int
+
     ):
         return {
-            "experiment_time": experiment_time,
+            "step": step,
             "task_name": self.task_name,
             "model_name": self.model_name,
             "perception": perception,
             "planning": planning,
             "control": control,
+            "completion_tokens": completion_tokens,
+            "prompt_tokens": prompt_tokens,
+            "total_tokens": total_tokens,
         }
 
     @staticmethod
@@ -93,8 +100,9 @@ class LLMRequest:
                 messages=messages,
                 response_format={"type": "json_object"},
             )
+            usage = response.usage
             content = json.loads(response.choices[0].message.content)
-            return content
+            return content, usage
         except Exception as e:
             print("Unable to generate ChatCompletion response")
             print(f"Exception: {e}")
@@ -130,25 +138,45 @@ class LLMRequest:
             print(f"Exception: {e}")
             return e
         
-    def is_legal_input(self, input: str):
+    def is_legal_input(self, text_prompt: str):
         """
         Check if the input has illegal characters using a prompted agent. 
         """
         system_prompt = "You are a safety agent. Check if the input is legal. Only reply TRUE or FALSE."
-        messages = self.construct_safety_agent(system_prompt, text=input)
+        messages = self.construct_safety_agent(system_prompt, text=text_prompt)
         try:
 
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=messages,
             )
-            content = response.choices[0].message.content
+            content = json.loads(response.choices[0].message.content)
             # if the response is YES, then the input is legal.
             if content["choices"][0]["message"]["content"]["text"] == "TRUE":
                 print("The input is legal.")
                 return True
             else:
                 print("The input is illegal.")
+                return False
+        except Exception as e:
+            print("Safety agent is unable to generate ChatCompletion response")
+            print(f"Exception: {e}")
+            return e
+
+    def check_output_alignment(self, system_prompt: str, safety_prompt: str):
+        messages = self.construct_safety_agent(system_prompt, text=safety_prompt)
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=messages,
+            )
+            content = json.loads(response.choices[0].message.content)
+            # if the response is YES, then the input is legal.
+            if content["choices"][0]["message"]["content"]["text"] == "TRUE":
+                print("The output is aligned.")
+                return True
+            else:
+                print("The output is not aligned.")
                 return False
         except Exception as e:
             print("Safety agent is unable to generate ChatCompletion response")
