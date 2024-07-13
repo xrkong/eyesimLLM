@@ -9,7 +9,7 @@ import numpy as np
 
 
 class DMEyebotLLM(DiscreteMovementEyebot):
-    def __init__(self, task_name: str, model_name="gpt-4o", human_instruction=""):
+    def __init__(self, task_name: str, model_name="gpt-4o", human_instruction="", attack_frequency=0.5):
         super().__init__(task_name=task_name)
         self.model_name = model_name
         self.llm_action_record_file_path = (
@@ -44,7 +44,7 @@ class DMEyebotLLM(DiscreteMovementEyebot):
         max = red_count[max_col]
         return [True, max_col, max]
 
-    def validate_action_list(self):
+    def validate_and_execute_action_list(self):
         flag = True
         for i, act in enumerate(self.last_command):
             if not act.is_safe(self.scan, range_degrees=10):
@@ -55,48 +55,48 @@ class DMEyebotLLM(DiscreteMovementEyebot):
                 self.logger.info(f"Action {act.action} distance={act.distance} direction={act.direction} is not safe")
                 save_item_to_csv(act.to_dict(step=self.step), file_path=self.llm_action_record_file_path)
                 flag = False
+            if flag:
+                self.execute_action(act)
+
         return flag
 
-    def execute_action_list(self):
+    def execute_action(self, act):
         """
         execute the list of actions
         """
-        for i, act in enumerate(self.last_command):
-            # Mark action as executed
-            act.executed = True
-            self.logger.info(
-                f"Executing action {act.action} distance={act.distance} angle={act.angle} direction={act.direction}"
-            )
+        act.executed = True
+        self.logger.info(
+            f"Executing action {act.action} distance={act.distance} angle={act.angle} direction={act.direction}"
+        )
 
-            # Execute the action based on its type
-            if act.action == "straight":
-                self.straight(act.distance, act.distance, act.direction)
-            elif act.action == "turn":
-                self.turn(act.angle, act.angle, act.direction)
+        # Execute the action based on its type
+        if act.action == "straight":
+            self.straight(act.distance, act.distance, act.direction)
+        elif act.action == "turn":
+            self.turn(act.angle, act.angle, act.direction)
 
-            # Update pos_after to reflect the new position after execution
-            act.pos_after = {"x": self.x, "y": self.y, "phi": self.phi}
+        # Update pos_after to reflect the new position after execution
+        act.pos_after = {"x": self.x, "y": self.y, "phi": self.phi}
 
-            # Save the action's details to a CSV file
-            save_item_to_csv(
-                act.to_dict(step=self.step),
-                file_path=self.llm_action_record_file_path,
-            )
+        # Save the action's details to a CSV file
+        save_item_to_csv(
+            act.to_dict(step=self.step),
+            file_path=self.llm_action_record_file_path,
+        )
 
-            # Update sensors and increment step
-            self.update_sensors()
-            self.step += 1
+        # Update sensors and increment step
+        self.update_sensors()
+        self.step += 1
 
-    def run(self, security: bool = False):
+    def run(self, security: bool = False, camera=True, lidar=True):
         max_value = 0
+        max_target_loss_step = 5
         # human_instruction = input("Enter the instruction: ")
-        max_step = 25
-        while KEYRead() != KEY4 and max_value < 60 and self.step < max_step:
-            self.logger.info("max value:"+str(max_value))
-            self.update_sensors()
+        max_step = 30
+        self.update_sensors()
+        while KEYRead() != KEY4 and max_value < 100 and self.step < max_step and max_target_loss_step > 0:
             self.data_collection()
-            [res, max_col, max_value] = self.red_detector(self.img)
-            current_state = self.get_current_state()
+            current_state = self.get_current_state(camera, lidar)
 
             is_executable = False
             failure_threshold = 1
@@ -137,10 +137,17 @@ class DMEyebotLLM(DiscreteMovementEyebot):
                     for a in content["control"]
                 ]
 
-                is_executable = self.validate_action_list()
+                is_executable = self.validate_and_execute_action_list()
                 failure_threshold -= 1
-            if is_executable:
-                self.execute_action_list()
-            else:
+                self.logger.info("is_executable: " + str(is_executable))
+                self.logger.info("failure threshold: " + str(failure_threshold))
+            if not is_executable:
                 self.logger.info("Mission failed")
                 return
+            self.update_sensors()
+            [res, max_col, max_value] = self.red_detector(self.img)
+            self.logger.info("max value:" + str(max_value))
+            if max_value == 0:
+                max_target_loss_step -= 1
+                self.logger.info("max target loss step:" + str(max_target_loss_step))
+

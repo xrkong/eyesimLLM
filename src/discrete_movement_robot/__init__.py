@@ -50,16 +50,18 @@ class DiscreteMovementEyebot:
             "lidar_path": lidar_path,
         }
 
-    def get_current_state(self, camera=True) -> Dict:
+    def get_current_state(self, camera=True, lidar=True) -> Dict:
         """
         Get the current state of the robot
         """
         state = self.to_dict()
-        lidar_base64 = encode_image(state["lidar_path"])
-        imgs = [lidar_base64]
+        imgs = []
+        if lidar:
+            lidar_base64 = encode_image(state["lidar_path"])
+            imgs.append(lidar_base64)
         if camera:
             img_base64 = encode_image(state["img_path"])
-            imgs = [img_base64, lidar_base64]
+            imgs.append(img_base64)
         last_command = (
             None
             if not self.last_command
