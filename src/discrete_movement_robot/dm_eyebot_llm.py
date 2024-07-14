@@ -78,15 +78,17 @@ class DMEyebotLLM(DiscreteMovementEyebot):
         # Update pos_after to reflect the new position after execution
         act.pos_after = {"x": self.x, "y": self.y, "phi": self.phi}
 
-        # Save the action's details to a CSV file
-        save_item_to_csv(
-            act.to_dict(step=self.step),
-            file_path=self.llm_action_record_file_path,
-        )
-
         # Update sensors and increment step
         self.update_sensors()
         self.step += 1
+
+        [res, max_col, max_value] = self.red_detector(self.img)
+
+        # Save the action's details to a CSV file
+        save_item_to_csv(
+            act.to_dict(step=self.step, target_lost=(max_value == 0)),
+            file_path=self.llm_action_record_file_path,
+        )
 
     def run(self, security: bool = False, camera=True, lidar=True):
         max_value = 0

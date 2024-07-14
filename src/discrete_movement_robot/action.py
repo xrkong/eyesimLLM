@@ -27,7 +27,7 @@ class Action:
             # f"Position After: {self.pos_after}"
         )
 
-    def to_dict(self, step: int) -> Dict:
+    def to_dict(self, step: int, target_lost=False) -> Dict:
         return {
             "step": step,
             "action": self.action,
@@ -38,6 +38,7 @@ class Action:
             "executed": self.executed,
             "pos_before": self.pos_before,
             "pos_after": self.pos_after,
+            "target_lost": target_lost,
         }
 
     def from_dict(self, action_dict: Dict):
