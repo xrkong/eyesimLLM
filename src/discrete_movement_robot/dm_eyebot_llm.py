@@ -46,6 +46,7 @@ class DMEyebotLLM(DiscreteMovementEyebot):
 
     def validate_and_execute_action_list(self):
         flag = True
+        self.step += 1
         for i, act in enumerate(self.last_command):
             if not act.is_safe(self.scan, range_degrees=10):
                 # Updating pos_before of the action object
@@ -80,7 +81,6 @@ class DMEyebotLLM(DiscreteMovementEyebot):
 
         # Update sensors and increment step
         self.update_sensors()
-        self.step += 1
 
         [res, max_col, max_value] = self.red_detector(self.img)
 
@@ -94,7 +94,7 @@ class DMEyebotLLM(DiscreteMovementEyebot):
         max_value = 0
         max_target_loss_step = 5
         # human_instruction = input("Enter the instruction: ")
-        max_step = 30
+        max_step = 25
         self.update_sensors()
         while KEYRead() != KEY4 and max_value < 100 and self.step < max_step and max_target_loss_step > 0:
             self.data_collection()

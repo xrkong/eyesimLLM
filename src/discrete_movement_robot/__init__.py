@@ -28,7 +28,7 @@ class DiscreteMovementEyebot:
         self.x = 0
         self.y = 0
         self.phi = 0
-        self.step = 1
+        self.step = 0
         self.img_dir = DATA_DIR / self.task_name / "images"
         self.img_dir.mkdir(parents=True, exist_ok=True)
         (DATA_DIR / self.task_name).mkdir(parents=True, exist_ok=True)
