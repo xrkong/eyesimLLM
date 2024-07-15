@@ -39,6 +39,6 @@ def control_prompt(current_state: Dict, experience_states: List[Dict], user_quer
     """
 
 def lawnmower_prompt(map_size: Tuple[int, int], current_position: Tuple[int, int]):
-    user_query = f"you are a king chess (move one square in any direction) in a novel empty chessboard with x axis 0-{map_size[0]} and y axis is 0-{map_size[1]}. your start point is {current_position}. Do not generate any other answer, just print your planned lawnmower path with x0,y0|x1,y1|..."
+    user_query = f"you are a king chess (move one square in any direction) in a novel empty chessboard with x axis 0-{map_size[0]} and y axis is 0-{map_size[1]}. your start point is {current_position}. Do not generate any other answer, just print a half lawnmower and a half circle path to cover all cells with x0,y0|x1,y1|..."
     # TODO Check readable format
     return user_query
