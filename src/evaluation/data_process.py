@@ -3,9 +3,9 @@ import os
 from src.utils.constant import DATA_DIR
 
 if __name__ == '__main__':
-    task_name = 'finder_no_obs_lidar'
+    task_name = 'finder_no_obs'
 
-    average_step = 15
+    average_step = 8
 
     steps = []
     tokens = []

@@ -94,7 +94,7 @@ class DMEyebotLLM(DiscreteMovementEyebot):
         max_value = 0
         max_target_loss_step = 5
         # human_instruction = input("Enter the instruction: ")
-        max_step = 25
+        max_step = 15
         self.update_sensors()
         while KEYRead() != KEY4 and max_value < 100 and self.step < max_step and max_target_loss_step > 0:
             self.data_collection()
