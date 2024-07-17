@@ -7,7 +7,7 @@ import pandas as pd
 import pygame
 from eye import *
 from pygame.locals import *
-from src.discrete_movement_robot.action import Action
+from src.discrete_robot.action import Action
 
 from src.utils.constant import (
     CONTROL_EVENT_CHECK_FREQUENCY,
@@ -18,7 +18,7 @@ from src.utils.constant import (
 from src.utils.utils import cam2image, encode_image, lidar2image, save_item_to_csv
 
 
-class DiscreteMovementEyebot:
+class DiscreteRobot:
     def __init__(self, task_name: str):
         self.logger = logging.getLogger(__name__)
         self.task_name = task_name

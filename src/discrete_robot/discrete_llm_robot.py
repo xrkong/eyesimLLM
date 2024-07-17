@@ -1,14 +1,14 @@
 from typing import Dict, List, Union
 import json
-from src.discrete_movement_robot import *
-from src.discrete_movement_robot.action import Action
+from src.discrete_robot import *
+from src.discrete_robot.action import Action
 from src.llm.llm_request import LLMRequest
 from src.llm.prompt import system_prompt_text, user_prompt_text
 from src.llm.prompt_tools import tools, system_prompt_tools, user_prompt_tools
 import numpy as np
 
 
-class DMEyebotLLM(DiscreteMovementEyebot):
+class DMLLMEyebot(DiscreteRobot):
     def __init__(self, task_name: str, model_name="gpt-4o", human_instruction="", attack_frequency=0.5):
         super().__init__(task_name=task_name)
         self.model_name = model_name
@@ -91,14 +91,13 @@ class DMEyebotLLM(DiscreteMovementEyebot):
         )
 
     def run(self, security: bool = False, camera=True, lidar=True):
-        id = OSMachineID()
-        print("my id %d\n" % id)  # to console
+        osid= OSMachineID()
+        print("my id %d\n" % osid)  # to console
         max_value = 0
-        max_target_loss_step = 5
         # human_instruction = input("Enter the instruction: ")
         max_step = 15
         self.update_sensors()
-        while KEYRead() != KEY4 and max_value < 100 and self.step < max_step and max_target_loss_step > 0:
+        while KEYRead() != KEY4 and max_value < 100 and self.step < max_step:
             self.data_collection()
             current_state = self.get_current_state(camera, lidar)
 
@@ -151,7 +150,5 @@ class DMEyebotLLM(DiscreteMovementEyebot):
             self.update_sensors()
             [res, max_col, max_value] = self.red_detector(self.img)
             self.logger.info("max value:" + str(max_value))
-            if max_value == 0:
-                max_target_loss_step -= 1
-                self.logger.info("max target loss step:" + str(max_target_loss_step))
+
 

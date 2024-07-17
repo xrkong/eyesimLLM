@@ -24,7 +24,7 @@ def system_prompt_text(security: bool = False):
                        {"camera_image": "perception result", "safe": "true"},
                        {"lidar_image": "perception result", "safe": "true"}],
         "planning": "A plan based on the perception in plaintext. The plan need to include control "
-                    "signals with justifications. one turn and one straight.",
+                    "signals with justifications. one turn action and one straight action.",
         "control": [{"action": "straight", "distance": 50, "direction": "forward"}],
     }
     if security:
