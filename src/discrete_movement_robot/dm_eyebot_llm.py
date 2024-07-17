@@ -91,6 +91,8 @@ class DMEyebotLLM(DiscreteMovementEyebot):
         )
 
     def run(self, security: bool = False, camera=True, lidar=True):
+        id = OSMachineID()
+        print("my id %d\n" % id)  # to console
         max_value = 0
         max_target_loss_step = 5
         # human_instruction = input("Enter the instruction: ")
