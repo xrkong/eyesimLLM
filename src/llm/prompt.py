@@ -1,15 +1,17 @@
 def user_prompt_text(
+        i=0,
         human_instruction: str = "",
         last_command: str = "",
         security: bool = False
 ):
     """
     Generate a user prompt for the robot control agent.
+    :param i: The current iteration
     :param human_instruction: The human instruction
     :param last_command: The last command executed by the robot
     :param security: If True, the prompt includes a security warning
     """
-    if len(human_instruction) == 0:
+    if len(human_instruction) == 0 or i % 2 == 0:
         human_instruction = "Continue completing the current task"
     last_command = f"\nLast Command: {last_command}"
 
@@ -31,7 +33,7 @@ def system_prompt_text(security: bool = False):
         response_schema["perception"].append({"last_command": "perception result", "safe": "true"})
 
     control_method = """
-    moving to top right while avoid obstacles until the target is visible in the camera image, continuously adjusting the angle to keep the target centered. If the target is not visible, turn towards outliers detected in the LiDAR image. Additionally, bypass any obstacles identified in the camera and LiDAR images.
+    Move randomly and avoid obstacles until the target is visible in the camera image, continuously adjusting the angle to keep the target centered. If the target is not visible, turn towards outliers detected in the LiDAR image. Additionally, bypass any obstacles identified in the camera and LiDAR images.
     Control signal constraints:    
     - straight:
         - distance: 0 < distance < 400 mm

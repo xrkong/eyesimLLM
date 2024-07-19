@@ -6,23 +6,15 @@ class EnvironGenerator:
         self.env_name = env_name
         self.file_path = f"/opt/eyesim/eyesimX/{self.env_name}.sim"
         self.world_file = "/opt/eyesim/eyesimX/test.wld"
-        self.llm_robot = ["S4 999 500 89", "S4 999 500 89", "S4 999 500 89", "S4 999 500 89"]
-        self.target = ["Can 1716 1784 90", "Can 1716 1784 90", "Can 1716 1784 90", "Can 1716 1784 90"]
-        self.dynamic_obstacles = []
-        self.static_obstacles = []
+        self.llm_robot = ["S4 999 500 89", "S4 1009 1133 89"]
+        self.target = ["Can 1716 1784 90", "Can 179 1765 90", "Can 273 225 90", "Can 1766 129 90"]
+        self.dynamic_obstacles = ["LabBot 399 881 0", "LabBot 1441 1579 0", "LabBot 1200 253 0"]
+        self.static_obstacles = ["Soccer 1362 600 90",
+                                 "Soccer 509 442 90",
+                                 "Soccer 1782 663 90",
+                                 "Soccer 815 1742 90",
+                                 "Soccer 1745 1115 90"
+                                 ]
 
     def generate_random_sim(self):
-        content = f"""
-# world
-{self.world_file}
-
-# Robots
-{random.choices(self.llm_robot)}
-{random.sample(self.dynamic_obstacles, 2)}
-
-# Objects
-{random.choices(self.target)}
-{random.sample(self.static_obstacles, 4)}
-        """
-        with open(self.file_path, "w") as f:
-            f.write(content)
+        raise NotImplementedError

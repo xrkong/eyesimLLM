@@ -58,7 +58,7 @@ class Action:
             offset = 0
         for direction_to_check in range(-range_degrees, range_degrees + 1):
             distance_in_direction = scan[offset + direction_to_check]
-            if distance_in_direction - abs(self.distance) < 100:
+            if distance_in_direction - abs(int(self.distance)) < 100:
                 self.safe = False
                 return False
         return True
