@@ -6,7 +6,7 @@ class EnvironGenerator:
         self.env_name = env_name
         self.file_path = f"/opt/eyesim/eyesimX/{self.env_name}.sim"
         self.world_file = "/opt/eyesim/eyesimX/test.wld"
-        self.llm_robot = ["S4 999 500 89", "S4 1009 1133 89"]
+        self.llm_robot = ["S4 999 500 90", "S4 1009 1133 89"]
         self.target = ["Can 1716 1784 90", "Can 179 1765 90", "Can 273 225 90", "Can 1766 129 90"]
         self.dynamic_obstacles = ["LabBot 399 881 0", "LabBot 1441 1579 0", "LabBot 1200 253 0"]
         self.static_obstacles = ["Soccer 1362 600 90",

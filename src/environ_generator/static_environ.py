@@ -24,3 +24,22 @@ settings VIS TRACE
         """
         with open(self.file_path, "w") as f:
             f.write(content)
+
+    def generate_sim(self):
+        content = f"""
+        # world
+        world {self.world_file}
+        settings VIS TRACE
+
+        # Robots
+        {self.llm_robot[0]}
+
+        # Objects
+        {self.target[0]}
+        {self.static_obstacles[0]}
+        {self.static_obstacles[2]}
+        {self.static_obstacles[3]}
+        {self.static_obstacles[4]}
+                """
+        with open(self.file_path, "w") as f:
+            f.write(content)

@@ -14,6 +14,7 @@ from src.utils.constant import (
     DATA_COLLECTION_FREQUENCY,
     DATA_DIR,
     SAFETY_EVENT_CHECK_FREQUENCY,
+    EXP_DIR,
 )
 from src.utils.utils import cam2image, encode_image, lidar2image, save_item_to_csv
 

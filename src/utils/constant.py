@@ -4,6 +4,8 @@ PROJECT_DIR = Path(__file__).resolve().resolve().parents[2]
 
 DATA_DIR = PROJECT_DIR / "experiment" / "data"
 
+EXP_DIR = PROJECT_DIR / "experiment"
+
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 DATA_COLLECTION_FREQUENCY = 1  # in seconds
