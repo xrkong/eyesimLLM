@@ -13,9 +13,6 @@ if __name__ == "__main__":
     parser.add_argument("defence", type=str, default="none", choices=['none', 'prevention', 'detection'])
     parser.add_argument("attack_rate", type=float, default=0.5, choices=[0.1, 0.3, 0.5, 0.7, 1])
 
-    static_environ = StaticEnviron()
-    static_environ.generate_sim()
-
     args = parser.parse_args()
     attack = args.attack
     model = args.model

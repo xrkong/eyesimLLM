@@ -27,19 +27,21 @@ settings VIS TRACE
 
     def generate_sim(self):
         content = f"""
-        # world
-        world {self.world_file}
-        settings VIS TRACE
+# world
+world {self.world_file}
+settings VIS TRACE
 
-        # Robots
-        {self.llm_robot[0]}
+# Robots
+LabBot 1789 780 0
+Ackermann 429 478 180
+S4 232 1659 0
 
-        # Objects
-        {self.target[0]}
-        {self.static_obstacles[0]}
-        {self.static_obstacles[2]}
-        {self.static_obstacles[3]}
-        {self.static_obstacles[4]}
+# Objects
+Can 1663 274 90
+golf 229 1091 90
+Soccer 1056 600 90
+Soccer 1579 1225 90
+
                 """
         with open(self.file_path, "w") as f:
             f.write(content)
