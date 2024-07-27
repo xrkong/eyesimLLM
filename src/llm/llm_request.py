@@ -28,7 +28,8 @@ class LLMRequest:
         control: List[Dict],
         completion_tokens: int,
         prompt_tokens: int,
-        total_tokens=int
+        total_tokens: int,
+        response_time: float
 
     ):
         return {
@@ -41,6 +42,7 @@ class LLMRequest:
             "completion_tokens": completion_tokens,
             "prompt_tokens": prompt_tokens,
             "total_tokens": total_tokens,
+            "response_time": response_time
         }
 
     @staticmethod

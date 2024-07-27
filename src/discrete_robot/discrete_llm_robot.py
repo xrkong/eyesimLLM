@@ -10,6 +10,7 @@ import os
 import threading
 import shutil
 from src.utils.utils import encode_image
+import time
 
 
 class DMLLMEyebot(DiscreteRobot):
@@ -160,6 +161,8 @@ class DMLLMEyebot(DiscreteRobot):
             if security:
                 failure_threshold = 3
             while not is_executable and failure_threshold > 0:
+
+                start_time = time.time()
                 content, usage = self.llm.openai_query(
                     system_prompt=system_prompt_text(security=security, security_prompt=self.defence_prompt()),
                     text=user_prompt_text(
@@ -170,6 +173,7 @@ class DMLLMEyebot(DiscreteRobot):
                     ),
                     images=images
                 )
+                end_time = time.time()
                 response_record = self.llm.llm_response_record(
                     self.step + 1,
                     content["perception"],
@@ -178,7 +182,9 @@ class DMLLMEyebot(DiscreteRobot):
                     usage.completion_tokens,
                     usage.prompt_tokens,
                     usage.total_tokens,
+                    end_time - start_time
                 )
+
                 save_item_to_csv(item=response_record, file_path=self.llm.file_path)
 
                 self.logger.info(content["perception"])
