@@ -26,6 +26,7 @@ class LLMRequest:
         perception: str,
         planning: str,
         control: List[Dict],
+        attack_injected: bool,
         completion_tokens: int,
         prompt_tokens: int,
         total_tokens: int,
@@ -39,6 +40,7 @@ class LLMRequest:
             "perception": perception,
             "planning": planning,
             "control": control,
+            "attack_injected": attack_injected,
             "completion_tokens": completion_tokens,
             "prompt_tokens": prompt_tokens,
             "total_tokens": total_tokens,
@@ -149,7 +151,7 @@ class LLMRequest:
         try:
 
             response = self.client.chat.completions.create(
-                model="gpt-4o",
+                model=self.model_name,
                 messages=messages,
             )
             content = json.loads(response.choices[0].message.content)
@@ -165,22 +167,3 @@ class LLMRequest:
             print(f"Exception: {e}")
             return e
 
-    def check_output_alignment(self, system_prompt: str, safety_prompt: str):
-        messages = self.construct_safety_agent(system_prompt, text=safety_prompt)
-        try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o",
-                messages=messages,
-            )
-            content = json.loads(response.choices[0].message.content)
-            # if the response is YES, then the input is legal.
-            if content["choices"][0]["message"]["content"]["text"] == "TRUE":
-                print("The output is aligned.")
-                return True
-            else:
-                print("The output is not aligned.")
-                return False
-        except Exception as e:
-            print("Safety agent is unable to generate ChatCompletion response")
-            print(f"Exception: {e}")
-            return e

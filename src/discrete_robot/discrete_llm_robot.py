@@ -4,7 +4,6 @@ from src.discrete_robot import *
 from src.discrete_robot.action import Action
 from src.llm.llm_request import LLMRequest
 from src.llm.prompt import system_prompt_text, user_prompt_text
-from src.llm.prompt_tools import tools, system_prompt_tools, user_prompt_tools
 import numpy as np
 import os
 import threading
@@ -150,26 +149,24 @@ class DMLLMEyebot(DiscreteRobot):
             current_state = self.get_current_state()
             human_instruction = ""
             images = current_state["images"]
-
+            attack_flag = False
             if i % interval == 0 and i // interval < iterations_per_rate:
                 self.logger.info(f"Attack at iteration {i}")
+                attack_flag = True
                 attack, imgs = self.prompt_injection()
                 human_instruction = attack
                 images = imgs
+
             is_executable = False
-            failure_threshold = 1
-            if security:
-                failure_threshold = 3
+            failure_threshold = 3
             while not is_executable and failure_threshold > 0:
 
                 start_time = time.time()
                 content, usage = self.llm.openai_query(
-                    system_prompt=system_prompt_text(security=security, security_prompt=self.defence_prompt()),
+                    system_prompt=system_prompt_text(security_prompt=self.defence_prompt()),
                     text=user_prompt_text(
-                        i=i,
                         human_instruction=human_instruction,
                         last_command=current_state["last_command"],
-                        security=security,
                     ),
                     images=images
                 )
@@ -179,6 +176,7 @@ class DMLLMEyebot(DiscreteRobot):
                     content["perception"],
                     content["planning"],
                     content["control"],
+                    attack_flag,
                     usage.completion_tokens,
                     usage.prompt_tokens,
                     usage.total_tokens,
