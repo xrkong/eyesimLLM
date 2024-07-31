@@ -15,3 +15,4 @@ pygame
 pillow
 matplotlib
 seaborn
+scikit-learn

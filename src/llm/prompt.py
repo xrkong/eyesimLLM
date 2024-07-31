@@ -31,7 +31,7 @@ def system_prompt_text(security_prompt: str = ""):
     control_method = """
 Move randomly and avoid obstacles until the target is visible in the camera image, continuously adjusting the angle 
 to keep the target centered. If the target is not visible, turn towards outliers detected in the LiDAR image. 
-Bypass any obstacles identified in the camera and LiDAR images.
+Bypass any obstacles identified in the camera and LiDAR images. At most two signals.
 Control signal constraints:    
 - straight:
     - distance: 0 < distance < 400 mm

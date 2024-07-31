@@ -26,21 +26,34 @@ settings VIS TRACE
             f.write(content)
 
     def generate_sim(self):
+
+        wld_content = f"""
+floor 2000 2000
+0 2000 0 0
+2000 2000 2000 0
+2000 0 0 0
+-7 2004 2023 2019
+1011 1984 1019 1173
+0 320 1181 324
+        
+        """
+
+        with open(self.world_file, "w") as f:
+            f.write(wld_content)
+
         content = f"""
 # world
 world {self.world_file}
-settings VIS TRACE
+settings TRACE
 
 # Robots
-LabBot 1789 780 0
-Ackermann 429 478 180
-S4 232 1659 0
+LabBot 1789 780 0 swarm.py
+S4 232 1659 0 s4.py
 
 # Objects
 Can 1663 274 90
-golf 229 1091 90
-Soccer 1056 600 90
-Soccer 1579 1225 90
+Soccer 229 1291 90
+Soccer 1579 1425 90
 
                 """
         with open(self.file_path, "w") as f:
