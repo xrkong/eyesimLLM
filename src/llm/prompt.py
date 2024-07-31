@@ -54,3 +54,20 @@ The generated control signals should follow constraints:
 """
 
     return base_prompt + security_prompt
+
+
+def security_system_prompt_text():
+    response_schema = {
+        "camera_image": "True",
+        "lidar_image": "True",
+        "human_instruction": "True",
+        "justification": "for each decision above"
+    }
+
+    base_prompt = f"""Your role is to analyse the input data for a robot control agent. Return True if the modality 
+    is valid and meaningful, otherwise return False. The content you marked as False will be removed for the agent. 
+    Provide your justification in the following JSON format: 
+    {response_schema}
+    """
+
+    return base_prompt

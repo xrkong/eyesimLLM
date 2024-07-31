@@ -7,6 +7,8 @@ import numpy as np
 import seaborn as sns
 from eye import *
 from PIL import Image
+import os, shutil
+from src.utils.constant import DATA_DIR
 
 
 def cam2image(image):
@@ -108,3 +110,58 @@ def save_item_to_csv(item: Dict, file_path: str):
         if file.tell() == 0:
             writer.writeheader()
         writer.writerow(item)
+
+
+def move_directory_contents(src, dst):
+    os.makedirs(dst, exist_ok=True)
+    for item in os.listdir(src):
+        s = os.path.join(src, item)
+        d = os.path.join(dst, item)
+        if os.path.isdir(s):
+            shutil.move(s, d)
+        else:
+            shutil.move(s, d)
+    os.rmdir(src)
+
+
+
+
+def number_task_name_folder(task_name):
+    """
+    Set the number of folders in the data directory
+    """
+    # check if any folder prefix with the task name
+    max_num = 0
+    for folder in os.listdir(DATA_DIR):
+        if folder.startswith(task_name):
+            # get the number after the task name
+            number = folder.split("_")[1]
+            if number.isnumeric() and int(number) > max_num:
+                max_num = int(number)
+    return f"{task_name}_{str(max_num + 1)}"
+
+
+def red_detector(img):
+    """
+    Returns the column with the most red pixels in the image.
+    """
+    hsi = IPCol2HSI(img)
+
+    hue = np.array(hsi[0]).reshape(QVGA_Y, QVGA_X)
+    red = np.where(hue > ctypes.c_int(20))
+
+    if len(red[0]) == 0:
+        return [False, 0, 0]
+
+    for i in range(len(red[0])):
+        LCDPixel(red[1][i], red[0][i], RED)
+
+    red_count = np.bincount(red[1])  # count the number of red pixels in each column
+    # print histogram
+    for i in range(len(red_count)):
+        LCDLine(i, QVGA_Y, i, QVGA_Y - red_count[i], RED)
+
+    # find the column with the most red pixels
+    max_col = np.argmax(red_count)
+    max = red_count[max_col]
+    return [True, max_col, max]

@@ -32,9 +32,9 @@ floor 2000 2000
 0 2000 0 0
 2000 2000 2000 0
 2000 0 0 0
--7 2004 2023 2019
-1011 1984 1019 1173
-0 320 1181 324
+0 2000 2000 2000
+1400 2000 1400 900
+0 320 1100 320
         
         """
 
@@ -47,13 +47,14 @@ world {self.world_file}
 settings TRACE
 
 # Robots
-LabBot 1789 780 0 swarm.py
-S4 232 1659 0 s4.py
+LabBot 229 591 20 swarm.py
+S4 432 1659 0 s4.py
 
 # Objects
 Can 1663 274 90
-Soccer 229 1291 90
-Soccer 1579 1425 90
+Soccer 229 1391 90
+Soccer 1679 1525 90
+Soccer 1600 700 0
 
                 """
         with open(self.file_path, "w") as f:

@@ -8,9 +8,9 @@ logging.basicConfig(level=logging.INFO)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run the robot with different prompts.')
-    parser.add_argument('model', type=str, default="gpt-4o", choices=['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini'])
-    parser.add_argument("attack", type=str, default="none", choices=['none', 'naive', 'image', 'repeat', 'noise'])
-    parser.add_argument("defence", type=str, default="none", choices=['none', 'prevention', 'detection'])
+    parser.add_argument('model', type=str, default="gpt-4o", choices=['gpt-4o', 'gpt-4o-mini'])
+    parser.add_argument("attack", type=str, default="none", choices=['none', 'naive', 'image', 'noise'])
+    parser.add_argument("defence", type=str, default="none", choices=['none', 'agent', 'self'])
     parser.add_argument("attack_rate", type=float, default=0.5, choices=[0.1, 0.3, 0.5, 0.7, 1])
 
     args = parser.parse_args()
