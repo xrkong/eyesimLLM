@@ -220,7 +220,7 @@ class DMLLMEyebot(DiscreteRobot):
             self.logger.info("Mission accomplished")
         elif self.step >= max_step:
             self.logger.info("Mission timed out")
-            move_directory_contents(f"{DATA_DIR}/{self.task_name}", f"{DATA_DIR}/{self.task_name}_survived")
+            move_directory_contents(f"{DATA_DIR}/{self.task_name}", f"{DATA_DIR}/{self.task_name}_timeout")
         else:
             self.logger.info("Mission failed")
-            move_directory_contents(f"{DATA_DIR}/{self.task_name}", f"{DATA_DIR}/{self.task_name}_failed")
+            move_directory_contents(f"{DATA_DIR}/{self.task_name}", f"{DATA_DIR}/{self.task_name}_interrupted")

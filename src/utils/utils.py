@@ -124,8 +124,6 @@ def move_directory_contents(src, dst):
     os.rmdir(src)
 
 
-
-
 def number_task_name_folder(task_name):
     """
     Set the number of folders in the data directory
@@ -135,7 +133,7 @@ def number_task_name_folder(task_name):
     for folder in os.listdir(DATA_DIR):
         if folder.startswith(task_name):
             # get the number after the task name
-            number = folder.split("_")[1]
+            number = folder.split("_")[-1]
             if number.isnumeric() and int(number) > max_num:
                 max_num = int(number)
     return f"{task_name}_{str(max_num + 1)}"

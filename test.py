@@ -19,7 +19,7 @@ if __name__ == "__main__":
     defence = args.defence
     attack_rate = args.attack_rate
 
-    robot = DMLLMEyebot(task_name=f"{model}_{attack}_{defence}_{attack_rate}",
+    robot = DMLLMEyebot(task_name=f"{model}_{attack}_{defence}_rate{attack_rate}",
                         attack=attack,
                         model_name=model,
                         attack_rate=attack_rate,

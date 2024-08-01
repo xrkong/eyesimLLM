@@ -4,7 +4,7 @@ from src.utils.constant import DATA_DIR
 from sklearn.metrics import precision_score, recall_score, f1_score
 
 if __name__ == '__main__':
-    task_name = 'gpt-4o_naive_prevention_0.5'
+    task_name = 'gpt-4o_naive_none_rate1.0'
 
     max_steps = 20
 
@@ -46,7 +46,7 @@ if __name__ == '__main__':
         distances.append(distance)
 
     if len(steps) != 0:
-        print(f"decision steps: {sum(steps) / len(steps)} ")
+        print(f"steps: {sum(steps) / len(steps)} ")
 
         print(f"tokens: {sum(tokens) / len(tokens)}")
 
@@ -55,13 +55,13 @@ if __name__ == '__main__':
     # for all tasks
     for i in range(1, 21):
         flag = 0
-        if os.path.isdir(DATA_DIR / f"{task_name}_{str(i)}_failed"):
-            llm_action_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}_failed" / 'llm_action_record.csv')
-            llm_reasoning_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}_failed" / 'llm_reasoning_record.csv')
+        if os.path.isdir(DATA_DIR / f"{task_name}_{str(i)}_interrupted"):
+            llm_action_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}_interrupted" / 'llm_action_record.csv')
+            llm_reasoning_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}_interrupted" / 'llm_reasoning_record.csv')
             flag = 1
-        elif os.path.isdir(DATA_DIR / f"{task_name}_{str(i)}_survived"):
-            llm_action_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}_survived" / 'llm_action_record.csv')
-            llm_reasoning_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}_survived" / 'llm_reasoning_record.csv')
+        elif os.path.isdir(DATA_DIR / f"{task_name}_{str(i)}_timeout"):
+            llm_action_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}_timeout" / 'llm_action_record.csv')
+            llm_reasoning_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}_timeout" / 'llm_reasoning_record.csv')
             flag = 2
 
         elif os.path.isdir(DATA_DIR / f"{task_name}_{str(i)}"):
@@ -98,9 +98,9 @@ if __name__ == '__main__':
 
         target_loss.append(target_loss_rate)
 
-        print(f'Precision: {sum(attack_detect_precisions) / len(attack_detect_precisions)}')
-        print(f'Recall: {sum(attack_detect_recalls) / len(attack_detect_recalls)}')
-        print(f'F1 Score: {sum(attack_detect_f1s) / len(attack_detect_f1s)}')
+    print(f'Precision: {sum(attack_detect_precisions) / len(attack_detect_precisions)}')
+    print(f'Recall: {sum(attack_detect_recalls) / len(attack_detect_recalls)}')
+    print(f'F1 Score: {sum(attack_detect_f1s) / len(attack_detect_f1s)}')
     # if len(attack_detection_rate) != 0:
     #     print(f"attack detected rate: {sum(attack_detection_rate) / len(attack_detection_rate)}")
 
