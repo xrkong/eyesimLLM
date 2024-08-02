@@ -32,6 +32,7 @@ if __name__ == '__main__':
     attack_detect_precisions = []
     attack_detect_recalls = []
     attack_detect_f1s = []
+    response_time = []
 
 
     def count_false_human_instruction(perception_list):
@@ -58,6 +59,7 @@ if __name__ == '__main__':
         steps.append(total_steps)
         tokens.append(total_tokens)
         distances.append(distance)
+        response_time += llm_reasoning_record['response_time'].tolist()
 
     if len(steps) != 0:
         print(f"steps: {sum(steps) / len(steps)} ")
@@ -121,6 +123,9 @@ if __name__ == '__main__':
 
     if len(exploration_rate) != 0:
         print(f"exploration rate: {sum(exploration_rate) / len(exploration_rate)}")
+
+    if len(response_time) != 0:
+        print(f"response time: {sum(response_time) / len(response_time)}")
 
     if len(target_loss) != 0:
         print(f"target loss rate: {sum(target_loss) / len(target_loss)}")

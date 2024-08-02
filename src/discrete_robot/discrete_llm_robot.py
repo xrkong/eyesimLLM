@@ -101,6 +101,8 @@ class DMLLMEyebot(DiscreteRobot):
             "total_tokens": usage.total_tokens,
         }
 
+        self.logger.info(f"Total usage: {total_usage}")
+
         return content, total_usage
 
     def validate_and_execute_action_list(self):
