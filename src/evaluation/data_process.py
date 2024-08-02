@@ -2,9 +2,23 @@ import pandas as pd
 import os
 from src.utils.constant import DATA_DIR
 from sklearn.metrics import precision_score, recall_score, f1_score
+import argparse
 
 if __name__ == '__main__':
-    task_name = 'gpt-4o_naive_none_rate1.0'
+
+    parser = argparse.ArgumentParser(description='Run the robot with different prompts.')
+    parser.add_argument('model', type=str, default="gpt-4o", choices=['gpt-4o', 'gpt-4o-mini'])
+    parser.add_argument("attack", type=str, default="none", choices=['none', 'naive', 'image', 'noise'])
+    parser.add_argument("defence", type=str, default="none", choices=['none', 'agent', 'self'])
+    parser.add_argument("attack_rate", type=float, default=0.5, choices=[0.1, 0.3, 0.5, 0.7, 1])
+
+    args = parser.parse_args()
+    attack = args.attack
+    model = args.model
+    defence = args.defence
+    attack_rate = args.attack_rate
+
+    task_name = f"{model}_{attack}_{defence}_rate{attack_rate}"
 
     max_steps = 20
 
@@ -57,7 +71,8 @@ if __name__ == '__main__':
         flag = 0
         if os.path.isdir(DATA_DIR / f"{task_name}_{str(i)}_interrupted"):
             llm_action_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}_interrupted" / 'llm_action_record.csv')
-            llm_reasoning_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}_interrupted" / 'llm_reasoning_record.csv')
+            llm_reasoning_record = pd.read_csv(
+                DATA_DIR / f"{task_name}_{str(i)}_interrupted" / 'llm_reasoning_record.csv')
             flag = 1
         elif os.path.isdir(DATA_DIR / f"{task_name}_{str(i)}_timeout"):
             llm_action_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}_timeout" / 'llm_action_record.csv')
