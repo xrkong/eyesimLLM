@@ -31,7 +31,7 @@ class DMLLMEyebot(DiscreteRobot):
             lidar = encode_image(f"{DATA_DIR}/{self.task_name}/images/0_lidar.png")
             return "", [cam, lidar]
         elif self.attack == "noise":
-            return "", [encode_image(f"{EXP_DIR}/img.png"), encode_image(f"{EXP_DIR}/img.png")]
+            return "", [encode_image(f"{EXP_DIR}/img.png")] + imgs
 
     def defence_llm_query(self, human_instruction, current_state, images):
 
