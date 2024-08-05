@@ -44,29 +44,29 @@ if __name__ == '__main__':
 
 
     # for completed tasks
-    for i in range(1, 21):
-
-        if not os.path.isdir(DATA_DIR / f"{task_name}_{str(i)}"):
-            continue
-
-        llm_action_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}" / 'llm_action_record.csv')
-        llm_reasoning_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}" / 'llm_reasoning_record.csv')
-        total_steps = llm_action_record['step'].max()
-
-        total_tokens = llm_reasoning_record['total_tokens'].sum()
-        distance = llm_action_record[llm_action_record['executed'] == True]['distance'].sum()
-
-        steps.append(total_steps)
-        tokens.append(total_tokens)
-        distances.append(distance)
-        response_time += llm_reasoning_record['response_time'].tolist()
-
-    if len(steps) != 0:
-        print(f"steps: {sum(steps) / len(steps)} ")
-
-        print(f"tokens: {sum(tokens) / len(tokens)}")
-
-        print(f"distance: {sum(distances) / len(distances)}")
+    # for i in range(1, 21):
+    #
+    #     if not os.path.isdir(DATA_DIR / f"{task_name}_{str(i)}"):
+    #         continue
+    #
+    #     llm_action_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}" / 'llm_action_record.csv')
+    #     llm_reasoning_record = pd.read_csv(DATA_DIR / f"{task_name}_{str(i)}" / 'llm_reasoning_record.csv')
+    #     total_steps = llm_action_record['step'].max()
+    #
+    #
+    #     distance = llm_action_record[llm_action_record['executed'] == True]['distance'].sum()
+    #
+    #     steps.append(total_steps)
+    #     # tokens.append(total_tokens)
+    #     distances.append(distance)
+    #     response_time += llm_reasoning_record['response_time'].tolist()
+    #
+    # if len(steps) != 0:
+    #     print(f"steps: {sum(steps) / len(steps)} ")
+    #
+    #     # print(f"tokens: {sum(tokens) / len(tokens)}")
+    #
+    #     print(f"distance: {sum(distances) / len(distances)}")
 
     # for all tasks
     for i in range(1, 21):
@@ -115,6 +115,8 @@ if __name__ == '__main__':
 
         target_loss.append(target_loss_rate)
 
+        total_tokens = llm_reasoning_record['total_tokens'].sum() / len(llm_reasoning_record)
+        tokens.append(total_tokens)
     print(f'Precision: {sum(attack_detect_precisions) / len(attack_detect_precisions)}')
     print(f'Recall: {sum(attack_detect_recalls) / len(attack_detect_recalls)}')
     print(f'F1 Score: {sum(attack_detect_f1s) / len(attack_detect_f1s)}')
@@ -124,8 +126,11 @@ if __name__ == '__main__':
     if len(exploration_rate) != 0:
         print(f"exploration rate: {sum(exploration_rate) / len(exploration_rate)}")
 
+    if len(tokens) != 0:
+        print(f"tokens: {sum(tokens) / len(tokens)}")
+
     if len(response_time) != 0:
         print(f"response time: {sum(response_time) / len(response_time)}")
 
-    if len(target_loss) != 0:
-        print(f"target loss rate: {sum(target_loss) / len(target_loss)}")
+    # if len(target_loss) != 0:
+    #     print(f"target loss rate: {sum(target_loss) / len(target_loss)}")
