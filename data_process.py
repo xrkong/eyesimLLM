@@ -59,7 +59,7 @@ if __name__ == '__main__':
     #     steps.append(total_steps)
     #     # tokens.append(total_tokens)
     #     distances.append(distance)
-    #     response_time += llm_reasoning_record['response_time'].tolist()
+
     #
     # if len(steps) != 0:
     #     print(f"steps: {sum(steps) / len(steps)} ")
@@ -100,7 +100,7 @@ if __name__ == '__main__':
         total_false_human_instruction = llm_reasoning_record['false_human_instruction_count'].sum()
 
         # false_detected_rate = total_false_human_instruction / len(llm_reasoning_record)
-
+        response_time += llm_reasoning_record['response_time'].tolist()
         if 'target_lost' not in llm_action_record:
             target_loss_rate = 0
         else:
